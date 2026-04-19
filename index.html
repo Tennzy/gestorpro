@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GestorPro - Palets Tarragona</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://unpkg.com/alpinejs@3/dist/cdn.min.js" defer></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a1a}
+[x-cloak]{display:none!important}
+input,select,textarea,button{font-family:inherit}
+input[type=text],input[type=email],input[type=number],input[type=date],input[type=password],input[type=search],select,textarea{
+  width:100%;border:1px solid #d0d0cc;border-radius:8px;padding:7px 10px;font-size:13px;background:#fff;color:#1a1a1a;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#185FA5;box-shadow:0 0 0 3px rgba(24,95,165,0.12)}
+.card{background:#fff;border:1px solid #e8e8e4;border-radius:12px}
+.bp{background:#185FA5;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer}
+.bp:hover{background:#1a4f8a}.bp:disabled{opacity:.6}
+.bs{background:#fff;color:#333;border:1px solid #d0d0cc;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer}
+.bs:hover{background:#f5f5f3}
+.be{background:#fff;color:#333;border:1px solid #d0d0cc;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;margin-right:6px}
+.bd{background:#fff;color:#991b1b;border:1px solid #fca5a5;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer}
+th{font-size:11px;font-weight:600;color:#888;text-align:left;padding:8px 12px;border-bottom:1px solid #eee;text-transform:uppercase;letter-spacing:.04em;background:#fafaf8}
+td{font-size:13px;color:#1a1a1a;padding:10px 12px;border-bottom:1px solid #f0f0ee}
+tr:hover>td{background:#fafaf8}
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:12px;color:#666;margin-bottom:4px;font-weight:500}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.g3{display:grid;grid-template-columns:2fr 70px 100px auto;gap:8px;align-items:flex-end}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-start;justify-content:center;padding-top:60px;z-index:1000}
+.mb{background:#fff;border-radius:12px;border:1px solid #e0e0dc;width:100%;max-width:580px;max-height:82vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.mh{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #eee;position:sticky;top:0;background:#fff;z-index:1}
+.errbox{font-size:12px;color:#991b1b;background:#fee2e2;padding:8px 10px;border-radius:6px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div x-data="app()" x-init="init()" x-cloak>
+
+<!-- LOADING -->
+<div x-show="authLoad" style="height:100vh;display:flex;align-items:center;justify-content:center">
+  <p style="color:#999;font-size:14px">Conectando...</p>
+</div>
+
+<!-- LOGIN -->
+<div x-show="!authLoad && !session" style="height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f5f3">
+  <div class="card" style="width:340px;padding:36px 44px">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="width:52px;height:52px;border-radius:14px;background:#185FA5;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;color:#fff;font-weight:700">G</div>
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">GestorPro</h2>
+      <p style="color:#999;font-size:13px">Palets Tarragona</p>
+    </div>
+    <div class="fld"><label>Email</label><input type="email" x-model="lemail" placeholder="tu@email.com" @keyup.enter="login()"></div>
+    <div class="fld"><label>Contraseña</label><input type="password" x-model="lpass" placeholder="••••••••" @keyup.enter="login()"></div>
+    <div class="errbox" x-show="lerr" x-text="lerr"></div>
+    <button class="bp" style="width:100%;padding:11px 0;font-size:14px" @click="login()" :disabled="lloading">
+      <span x-text="lloading?'Entrando...':'Entrar'"></span>
+    </button>
+  </div>
+</div>
+
+<!-- APP -->
+<div x-show="!authLoad && session" style="display:flex;height:100vh;overflow:hidden">
+
+  <!-- SIDEBAR -->
+  <div style="width:210px;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0">
+    <div style="padding:20px 16px 16px;border-bottom:1px solid #e8e8e4">
+      <p style="font-weight:700;font-size:15px">GestorPro</p>
+      <p style="font-size:11px;color:#999;margin-top:3px">Palets Tarragona</p>
+    </div>
+    <nav style="flex:1;padding-top:8px">
+      <template x-for="n in nav" :key="n.id">
+        <button @click="sec=n.id;q=''"
+          :style="`display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;border:none;cursor:pointer;text-align:left;font-size:13px;border-left:3px solid ${sec===n.id?'#185FA5':'transparent'};background:${sec===n.id?'#EFF6FF':'transparent'};color:${sec===n.id?'#1d4ed8':'#555'};font-weight:${sec===n.id?600:400}`">
+          <span style="font-family:monospace;font-size:14px" x-text="n.s"></span>
+          <span x-text="n.l"></span>
+        </button>
+      </template>
+    </nav>
+    <div style="padding:14px 16px;border-top:1px solid #e8e8e4">
+      <p style="font-size:11px;color:#999;margin:0 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="session?.user?.email||''"></p>
+      <button class="bs" style="width:100%" @click="logout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div style="flex:1;overflow-y:auto;padding:28px;background:#f5f5f3">
+    <div x-show="dataLoad" style="text-align:center;padding-top:80px;color:#999">Cargando datos...</div>
+
+    <!-- DASHBOARD -->
+    <div x-show="!dataLoad && sec==='dashboard'">
+      <h2 style="margin:0 0 20px;font-size:18px;font-weight:700">Resumen general</h2>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
+        <template x-for="c in cards()" :key="c.l">
+          <div :style="`border-radius:12px;padding:16px 18px;background:${c.bg}`">
+            <p :style="`font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px;color:${c.c}`" x-text="c.l"></p>
+            <p :style="`font-size:22px;font-weight:700;margin:0;color:${c.c}`" x-text="c.v"></p>
+          </div>
+        </template>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card" style="padding:16px">
+          <p style="font-size:14px;font-weight:600;margin:0 0 12px">Últimas facturas</p>
+          <p x-show="!d.facturas.length" style="font-size:13px;color:#999">Sin registros todavía.</p>
+          <template x-for="it in d.facturas.slice(0,4)" :key="it.id">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0ee">
+              <div><p style="font-size:13px;margin:0;font-weight:500" x-text="it.numero"></p><p style="font-size:11px;color:#999;margin:0" x-text="it.fecha"></p></div>
+              <div style="text-align:right"><span :style="bs(it.estado)" x-text="it.estado"></span><p style="font-size:12px;font-weight:600;margin:4px 0 0" x-text="fmt(tot(it.lineas))"></p></div>
+            </div>
+          </template>
+        </div>
+        <div class="card" style="padding:16px">
+          <p style="font-size:14px;font-weight:600;margin:0 0 12px">Últimos pedidos</p>
+          <p x-show="!d.pedidos.length" style="font-size:13px;color:#999">Sin registros todavía.</p>
+          <template x-for="it in d.pedidos.slice(0,4)" :key="it.id">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0ee">
+              <div><p style="font-size:13px;margin:0;font-weight:500" x-text="it.numero"></p><p style="font-size:11px;color:#999;margin:0" x-text="it.fecha"></p></div>
+              <div style="text-align:right"><span :style="bs(it.estado)" x-text="it.estado"></span><p style="font-size:12px;font-weight:600;margin:4px 0 0" x-text="fmt(tot(it.lineas))"></p></div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div x-show="!dataLoad && sec==='clientes'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Clientes</h2><div style="flex:1"></div>
+        <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
+        <button class="bp" @click="open('cliente')">+ Añadir</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th>Nombre</th><th>NIF/CIF</th><th>Email</th><th>Teléfono</th><th>Ciudad</th><th></th></tr></thead>
+          <tbody>
+            <tr x-show="!filt('clientes').length"><td colspan="6" style="text-align:center;color:#999;padding:40px 0">Sin registros todavía.</td></tr>
+            <template x-for="it in filt('clientes')" :key="it.id"><tr>
+              <td x-text="it.nombre"></td><td x-text="it.nif"></td><td x-text="it.email"></td><td x-text="it.telefono"></td><td x-text="it.ciudad"></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('cliente',it)">Editar</button><button class="bd" @click="del('clientes',it.id)">Eliminar</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('clientes').length+' registros'"></p>
+    </div>
+
+    <!-- PROVEEDORES -->
+    <div x-show="!dataLoad && sec==='proveedores'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Proveedores</h2><div style="flex:1"></div>
+        <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
+        <button class="bp" @click="open('proveedor')">+ Añadir</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th>Nombre</th><th>NIF/CIF</th><th>Email</th><th>Teléfono</th><th>Ciudad</th><th></th></tr></thead>
+          <tbody>
+            <tr x-show="!filt('proveedores').length"><td colspan="6" style="text-align:center;color:#999;padding:40px 0">Sin registros todavía.</td></tr>
+            <template x-for="it in filt('proveedores')" :key="it.id"><tr>
+              <td x-text="it.nombre"></td><td x-text="it.nif"></td><td x-text="it.email"></td><td x-text="it.telefono"></td><td x-text="it.ciudad"></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('proveedor',it)">Editar</button><button class="bd" @click="del('proveedores',it.id)">Eliminar</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('proveedores').length+' registros'"></p>
+    </div>
+
+    <!-- PRODUCTOS -->
+    <div x-show="!dataLoad && sec==='productos'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Productos e inventario</h2><div style="flex:1"></div>
+        <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
+        <button class="bp" @click="open('producto')">+ Añadir</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th>Producto</th><th>Categoría</th><th>P. Venta</th><th>P. Compra</th><th>Stock</th><th></th></tr></thead>
+          <tbody>
+            <tr x-show="!filt('productos').length"><td colspan="6" style="text-align:center;color:#999;padding:40px 0">Sin registros todavía.</td></tr>
+            <template x-for="it in filt('productos')" :key="it.id"><tr>
+              <td x-text="it.nombre"></td><td x-text="it.categoria"></td>
+              <td x-text="fmt(it.precio_venta)"></td><td x-text="fmt(it.precio_compra)"></td>
+              <td x-text="it.stock+' '+it.unidad"></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('producto',it)">Editar</button><button class="bd" @click="del('productos',it.id)">Eliminar</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('productos').length+' registros'"></p>
+    </div>
+
+    <!-- FACTURAS -->
+    <div x-show="!dataLoad && sec==='facturas'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Facturas de venta</h2><div style="flex:1"></div>
+        <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
+        <button class="bp" @click="open('factura')">+ Añadir</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th>Total (IVA inc.)</th><th></th></tr></thead>
+          <tbody>
+            <tr x-show="!filt('facturas').length"><td colspan="6" style="text-align:center;color:#999;padding:40px 0">Sin registros todavía.</td></tr>
+            <template x-for="it in filt('facturas')" :key="it.id"><tr>
+              <td x-text="it.numero"></td><td x-text="it.fecha"></td>
+              <td x-text="cname(it.cliente_id)"></td>
+              <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
+              <td><strong x-text="fmt(tot(it.lineas)*1.21)"></strong></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('factura',it)">Editar</button><button class="bd" @click="del('facturas',it.id)">Eliminar</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('facturas').length+' registros'"></p>
+    </div>
+
+    <!-- PEDIDOS -->
+    <div x-show="!dataLoad && sec==='pedidos'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Pedidos de compra</h2><div style="flex:1"></div>
+        <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
+        <button class="bp" @click="open('pedido')">+ Añadir</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th>Número</th><th>Fecha</th><th>Proveedor</th><th>Estado</th><th>Total</th><th></th></tr></thead>
+          <tbody>
+            <tr x-show="!filt('pedidos').length"><td colspan="6" style="text-align:center;color:#999;padding:40px 0">Sin registros todavía.</td></tr>
+            <template x-for="it in filt('pedidos')" :key="it.id"><tr>
+              <td x-text="it.numero"></td><td x-text="it.fecha"></td>
+              <td x-text="pname(it.proveedor_id)"></td>
+              <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
+              <td><strong x-text="fmt(tot(it.lineas))"></strong></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('pedido',it)">Editar</button><button class="bd" @click="del('pedidos',it.id)">Eliminar</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('pedidos').length+' registros'"></p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONTACTO (cliente/proveedor) -->
+<div class="ov" x-show="modal==='cliente'||modal==='proveedor'" @click.self="modal=null">
+  <div class="mb">
+    <div class="mh">
+      <h3 style="margin:0;font-size:15px;font-weight:600" x-text="(f.id?'Editar ':'Nuevo ')+modal"></h3>
+      <div style="flex:1"></div>
+      <button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="g2">
+        <div class="fld"><label>Nombre *</label><input type="text" x-model="f.nombre" placeholder="Nombre o empresa"></div>
+        <div class="fld"><label>NIF/CIF</label><input type="text" x-model="f.nif" placeholder="B12345678"></div>
+        <div class="fld"><label>Email</label><input type="email" x-model="f.email" placeholder="email@empresa.es"></div>
+        <div class="fld"><label>Teléfono</label><input type="text" x-model="f.telefono" placeholder="900 000 000"></div>
+        <div class="fld"><label>Ciudad</label><input type="text" x-model="f.ciudad" placeholder="Barcelona"></div>
+      </div>
+      <div class="fld"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:60px"></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="bs" @click="modal=null">Cancelar</button>
+        <button class="bp" @click="saveContact()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUCTO -->
+<div class="ov" x-show="modal==='producto'" @click.self="modal=null">
+  <div class="mb">
+    <div class="mh">
+      <h3 style="margin:0;font-size:15px;font-weight:600" x-text="f.id?'Editar producto':'Nuevo producto'"></h3>
+      <div style="flex:1"></div>
+      <button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="fld"><label>Nombre *</label><input type="text" x-model="f.nombre" placeholder="Nombre descriptivo"></div>
+      <div class="g2">
+        <div class="fld"><label>Categoría</label><input type="text" x-model="f.categoria" placeholder="Hardware, Servicios..."></div>
+        <div class="fld"><label>Unidad</label>
+          <select x-model="f.unidad"><option>ud</option><option>hora</option><option>mes</option><option>año</option><option>kg</option><option>litro</option></select>
+        </div>
+        <div class="fld"><label>Precio venta (€)</label><input type="number" x-model="f.precio_venta" placeholder="0.00"></div>
+        <div class="fld"><label>Precio compra (€)</label><input type="number" x-model="f.precio_compra" placeholder="0.00"></div>
+        <div class="fld"><label>Stock actual</label><input type="number" x-model="f.stock" placeholder="0"></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button class="bs" @click="modal=null">Cancelar</button>
+        <button class="bp" @click="saveProducto()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FACTURA -->
+<div class="ov" x-show="modal==='factura'" @click.self="modal=null">
+  <div class="mb">
+    <div class="mh">
+      <h3 style="margin:0;font-size:15px;font-weight:600" x-text="f.id?'Editar factura':'Nueva factura'"></h3>
+      <div style="flex:1"></div>
+      <button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="g2">
+        <div class="fld"><label>Nº Factura *</label><input type="text" x-model="f.numero" placeholder="F-2025-001"></div>
+        <div class="fld"><label>Fecha</label><input type="date" x-model="f.fecha"></div>
+        <div class="fld"><label>Cliente *</label>
+          <select x-model="f.cliente_id">
+            <option value="">— Seleccionar —</option>
+            <template x-for="c in d.clientes" :key="c.id"><option :value="String(c.id)" x-text="c.nombre"></option></template>
+          </select>
+        </div>
+        <div class="fld"><label>Estado</label>
+          <select x-model="f.estado">
+            <option value="borrador">Borrador</option><option value="enviada">Enviada</option><option value="pagada">Pagada</option><option value="cancelada">Cancelada</option>
+          </select>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#666;font-weight:500;margin-bottom:8px">Líneas</p>
+      <div style="background:#f8f8f6;border-radius:8px;padding:12px;margin-bottom:10px;border:1px solid #eee">
+        <div class="g3">
+          <div class="fld"><label>Descripción</label><input type="text" x-model="nl.desc" placeholder="Descripción del artículo" @keyup.enter="addL()"></div>
+          <div class="fld"><label>Cant.</label><input type="number" x-model="nl.qty" min="1"></div>
+          <div class="fld"><label>Precio (€)</label><input type="number" x-model="nl.precio" placeholder="0"></div>
+          <button class="bp" style="margin-top:18px" @click="addL()">+</button>
+        </div>
+      </div>
+      <div x-show="f.lineas && f.lineas.length>0">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr><th>Descripción</th><th style="text-align:right">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Total</th><th></th></tr></thead>
+          <tbody>
+            <template x-for="(l,i) in f.lineas" :key="i"><tr>
+              <td x-text="l.desc"></td>
+              <td style="text-align:right" x-text="l.qty"></td>
+              <td style="text-align:right" x-text="fmt(l.precio)"></td>
+              <td style="text-align:right;font-weight:600" x-text="fmt(l.qty*l.precio)"></td>
+              <td><button class="bd" style="padding:1px 7px" @click="remL(i)">✕</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+        <div style="text-align:right;border-top:1px solid #eee;padding-top:10px;margin-top:4px">
+          <p style="font-size:12px;color:#666;margin:0 0 3px" x-text="'Base imponible: '+fmt(tot(f.lineas))"></p>
+          <p style="font-size:12px;color:#666;margin:0 0 3px" x-text="'IVA 21%: '+fmt(tot(f.lineas)*0.21)"></p>
+          <p style="font-size:16px;font-weight:700;margin:0" x-text="'Total: '+fmt(tot(f.lineas)*1.21)"></p>
+        </div>
+      </div>
+      <div class="fld" style="margin-top:12px"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:50px" placeholder="Condiciones de pago, observaciones..."></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="bs" @click="modal=null">Cancelar</button>
+        <button class="bp" @click="saveDoc('facturas','cliente_id')">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PEDIDO -->
+<div class="ov" x-show="modal==='pedido'" @click.self="modal=null">
+  <div class="mb">
+    <div class="mh">
+      <h3 style="margin:0;font-size:15px;font-weight:600" x-text="f.id?'Editar pedido':'Nuevo pedido de compra'"></h3>
+      <div style="flex:1"></div>
+      <button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="g2">
+        <div class="fld"><label>Nº Pedido *</label><input type="text" x-model="f.numero" placeholder="PC-2025-001"></div>
+        <div class="fld"><label>Fecha</label><input type="date" x-model="f.fecha"></div>
+        <div class="fld"><label>Proveedor *</label>
+          <select x-model="f.proveedor_id">
+            <option value="">— Seleccionar —</option>
+            <template x-for="p in d.proveedores" :key="p.id"><option :value="String(p.id)" x-text="p.nombre"></option></template>
+          </select>
+        </div>
+        <div class="fld"><label>Estado</label>
+          <select x-model="f.estado">
+            <option value="borrador">Borrador</option><option value="enviado">Enviado</option><option value="recibido">Recibido</option><option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#666;font-weight:500;margin-bottom:8px">Líneas</p>
+      <div style="background:#f8f8f6;border-radius:8px;padding:12px;margin-bottom:10px;border:1px solid #eee">
+        <div class="g3">
+          <div class="fld"><label>Descripción</label><input type="text" x-model="nl.desc" placeholder="Descripción del artículo" @keyup.enter="addL()"></div>
+          <div class="fld"><label>Cant.</label><input type="number" x-model="nl.qty" min="1"></div>
+          <div class="fld"><label>Precio (€)</label><input type="number" x-model="nl.precio" placeholder="0"></div>
+          <button class="bp" style="margin-top:18px" @click="addL()">+</button>
+        </div>
+      </div>
+      <div x-show="f.lineas && f.lineas.length>0">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr><th>Descripción</th><th style="text-align:right">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Total</th><th></th></tr></thead>
+          <tbody>
+            <template x-for="(l,i) in f.lineas" :key="i"><tr>
+              <td x-text="l.desc"></td>
+              <td style="text-align:right" x-text="l.qty"></td>
+              <td style="text-align:right" x-text="fmt(l.precio)"></td>
+              <td style="text-align:right;font-weight:600" x-text="fmt(l.qty*l.precio)"></td>
+              <td><button class="bd" style="padding:1px 7px" @click="remL(i)">✕</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+        <div style="text-align:right;border-top:1px solid #eee;padding-top:10px;margin-top:4px">
+          <p style="font-size:16px;font-weight:700;margin:0" x-text="'Total: '+fmt(tot(f.lineas))"></p>
+        </div>
+      </div>
+      <div class="fld" style="margin-top:12px"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:50px" placeholder="Observaciones..."></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="bs" @click="modal=null">Cancelar</button>
+        <button class="bp" @click="saveDoc('pedidos','proveedor_id')">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ERROR TOAST -->
+<div x-show="serr" style="position:fixed;bottom:24px;right:24px;background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:10px;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:2000" x-text="serr"></div>
+
+</div>
+<script>
+function app(){
+  const {createClient}=window.supabase;
+  const sb=createClient('https://uludefpsovlfbodbihig.supabase.co','sb_publishable_HTl21hRegaA86sJgUmJ61w_02rjod9n');
+  const ECOL={borrador:{bg:'#F1EFE8',c:'#5F5E5A'},enviada:{bg:'#dbeafe',c:'#1d4ed8'},enviado:{bg:'#dbeafe',c:'#1d4ed8'},pagada:{bg:'#dcfce7',c:'#166534'},recibido:{bg:'#dcfce7',c:'#166534'},cancelada:{bg:'#fee2e2',c:'#991b1b'},cancelado:{bg:'#fee2e2',c:'#991b1b'},pendiente:{bg:'#fef3c7',c:'#92400e'}};
+  return {
+    authLoad:true, dataLoad:false, session:null,
+    lemail:'', lpass:'', lerr:'', lloading:false,
+    sec:'dashboard', q:'',
+    d:{clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[]},
+    modal:null, f:{}, nl:{desc:'',qty:1,precio:''},
+    serr:'',
+    nav:[{id:'dashboard',l:'Dashboard',s:'◉'},{id:'clientes',l:'Clientes',s:'◎'},{id:'proveedores',l:'Proveedores',s:'◈'},{id:'productos',l:'Productos',s:'▣'},{id:'facturas',l:'Facturas venta',s:'≡'},{id:'pedidos',l:'Pedidos compra',s:'⊕'}],
+
+    async init(){
+      const {data:{session}}=await sb.auth.getSession();
+      this.session=session; this.authLoad=false;
+      if(session) this.load();
+      sb.auth.onAuthStateChange((_,s)=>{this.session=s; if(s) this.load(); else this.d={clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[]};});
+    },
+    async load(){
+      this.dataLoad=true;
+      const [a,b,c,e,f]=await Promise.all([
+        sb.from('clientes').select('*').order('nombre'),
+        sb.from('proveedores').select('*').order('nombre'),
+        sb.from('productos').select('*').order('nombre'),
+        sb.from('facturas').select('*').order('created_at',{ascending:false}),
+        sb.from('pedidos').select('*').order('created_at',{ascending:false}),
+      ]);
+      this.d={clientes:a.data||[],proveedores:b.data||[],productos:c.data||[],facturas:e.data||[],pedidos:f.data||[]};
+      this.dataLoad=false;
+    },
+    async reload(t){
+      const isD=t==='facturas'||t==='pedidos';
+      const {data:r}=await sb.from(t).select('*').order(isD?'created_at':'nombre',{ascending:!isD});
+      this.d={...this.d,[t]:r||[]};
+    },
+    async login(){
+      this.lloading=true; this.lerr='';
+      const {error}=await sb.auth.signInWithPassword({email:this.lemail,password:this.lpass});
+      if(error) this.lerr='Email o contraseña incorrectos.';
+      this.lloading=false;
+    },
+    logout(){sb.auth.signOut();},
+    open(tipo,item=null){
+      this.modal=tipo; this.nl={desc:'',qty:1,precio:''};
+      if(tipo==='cliente'||tipo==='proveedor'){
+        this.f=item?{...item}:{nombre:'',email:'',telefono:'',nif:'',ciudad:'',notas:''};
+      } else if(tipo==='producto'){
+        this.f=item?{...item}:{nombre:'',categoria:'',precio_venta:'',precio_compra:'',stock:'',unidad:'ud'};
+      } else if(tipo==='factura'){
+        this.f=item?{...item,cliente_id:String(item.cliente_id||'')}:{numero:'',fecha:this.hoy(),cliente_id:'',estado:'borrador',lineas:[],notas:''};
+      } else if(tipo==='pedido'){
+        this.f=item?{...item,proveedor_id:String(item.proveedor_id||'')}:{numero:'',fecha:this.hoy(),proveedor_id:'',estado:'borrador',lineas:[],notas:''};
+      }
+    },
+    async saveContact(){
+      if(!this.f.nombre) return;
+      const tabla=this.modal==='cliente'?'clientes':'proveedores';
+      const {id,user_id,created_at,...rest}=this.f;
+      const {error}=id? await sb.from(tabla).update(rest).eq('id',id) : await sb.from(tabla).insert({...rest,user_id:this.session.user.id});
+      if(error){this.err('Error: '+error.message);return;}
+      await this.reload(tabla); this.modal=null;
+    },
+    async saveProducto(){
+      if(!this.f.nombre) return;
+      const {id,user_id,created_at,...rest}=this.f;
+      const {error}=id? await sb.from('productos').update(rest).eq('id',id) : await sb.from('productos').insert({...rest,user_id:this.session.user.id});
+      if(error){this.err('Error: '+error.message);return;}
+      await this.reload('productos'); this.modal=null;
+    },
+    async saveDoc(tabla,ck){
+      if(!this.f.numero||!this.f[ck]) return;
+      const {id,user_id,created_at,...rest}=this.f;
+      const sd={...rest,[ck]:Number(rest[ck])};
+      const {error}=id? await sb.from(tabla).update(sd).eq('id',id) : await sb.from(tabla).insert({...sd,user_id:this.session.user.id});
+      if(error){this.err('Error: '+error.message);return;}
+      await this.reload(tabla); this.modal=null;
+    },
+    addL(){if(!this.nl.desc)return;this.f.lineas=[...(this.f.lineas||[]),{desc:this.nl.desc,qty:Number(this.nl.qty),precio:Number(this.nl.precio)}];this.nl={desc:'',qty:1,precio:''};},
+    remL(i){this.f.lineas=this.f.lineas.filter((_,idx)=>idx!==i);},
+    async del(t,id){
+      if(!confirm('¿Eliminar este registro?')) return;
+      await sb.from(t).delete().eq('id',id);
+      this.d={...this.d,[t]:this.d[t].filter(x=>x.id!==id)};
+    },
+    err(m){this.serr=m; setTimeout(()=>this.serr='',4000);},
+    filt(t){
+      const keys={clientes:['nombre','email','nif','ciudad'],proveedores:['nombre','email','nif','ciudad'],productos:['nombre','categoria'],facturas:['numero'],pedidos:['numero']};
+      if(!this.q) return this.d[t];
+      const q=this.q.toLowerCase();
+      return this.d[t].filter(i=>(keys[t]||[]).some(k=>String(i[k]||'').toLowerCase().includes(q)));
+    },
+    fmt:n=>Number(n).toLocaleString('es-ES',{style:'currency',currency:'EUR'}),
+    tot:ls=>(ls||[]).reduce((s,l)=>s+Number(l.qty)*Number(l.precio),0),
+    hoy:()=>new Date().toISOString().split('T')[0],
+    bs(e){const x=ECOL[e]||{bg:'#F1EFE8',c:'#5F5E5A'};return `background:${x.bg};color:${x.c};display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;text-transform:capitalize`;},
+    cname(id){return this.d.clientes.find(c=>c.id===id)?.nombre||'—';},
+    pname(id){return this.d.proveedores.find(p=>p.id===id)?.nombre||'—';},
+    cards(){return[
+      {l:'Total facturado',v:this.fmt(this.d.facturas.reduce((s,f)=>s+this.tot(f.lineas),0)),bg:'#dcfce7',c:'#166534'},
+      {l:'Total compras',v:this.fmt(this.d.pedidos.reduce((s,p)=>s+this.tot(p.lineas),0)),bg:'#fef3c7',c:'#92400e'},
+      {l:'Clientes',v:this.d.clientes.length,bg:'#dbeafe',c:'#1d4ed8'},
+      {l:'Proveedores',v:this.d.proveedores.length,bg:'#ede9fe',c:'#6d28d9'},
+      {l:'Facturas pendientes',v:this.d.facturas.filter(f=>f.estado==='enviada').length,bg:'#dbeafe',c:'#1d4ed8'},
+      {l:'Pedidos en curso',v:this.d.pedidos.filter(p=>['enviado','borrador'].includes(p.estado)).length,bg:'#fef3c7',c:'#92400e'},
+    ];}
+  };
+}
+</script>
+</body>
+</html>
