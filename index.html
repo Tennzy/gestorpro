@@ -32,6 +32,51 @@ tr:hover>td{background:#fafaf8}
 .mb{background:#fff;border-radius:12px;border:1px solid #e0e0dc;width:100%;max-width:580px;max-height:82vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
 .mh{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #eee;position:sticky;top:0;background:#fff;z-index:1}
 .errbox{font-size:12px;color:#991b1b;background:#fee2e2;padding:8px 10px;border-radius:6px;margin-bottom:12px}
+
+/* ── AI PANEL ── */
+.ai-panel{position:fixed;top:0;right:0;height:100vh;width:360px;background:#fff;border-left:1px solid #e8e8e4;display:flex;flex-direction:column;z-index:900;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(0,0,0,.08)}
+.ai-panel.open{transform:translateX(0)}
+.ai-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #eee;flex-shrink:0}
+.ai-ava{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#185FA5,#6366f1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.ai-title{font-size:14px;font-weight:600;flex:1}
+.ai-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ai-msgs::-webkit-scrollbar{width:4px}
+.ai-msgs::-webkit-scrollbar-thumb{background:#e0e0dc;border-radius:2px}
+.ai-bubble{max-width:88%;padding:9px 12px;border-radius:10px;font-size:13px;line-height:1.55}
+.ai-bubble.bot{background:#f0f4ff;color:#1a1a1a;border-bottom-left-radius:3px;align-self:flex-start}
+.ai-bubble.usr{background:#185FA5;color:#fff;border-bottom-right-radius:3px;align-self:flex-end}
+.ai-bubble.bot strong{font-weight:600}
+.ai-bubble.bot ul{margin:6px 0 0 16px}
+.ai-bubble.bot li{margin-bottom:2px}
+.ai-chips{padding:8px 14px;display:flex;flex-wrap:wrap;gap:5px;border-top:1px solid #f0f0ee;flex-shrink:0}
+.ai-chip{font-size:11px;background:#f5f5f3;border:1px solid #e8e8e4;color:#555;padding:4px 10px;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.ai-chip:hover{background:#EFF6FF;border-color:#185FA5;color:#185FA5}
+.ai-input-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid #eee;flex-shrink:0;align-items:flex-end}
+.ai-input-wrap{flex:1;display:flex;background:#f5f5f3;border:1px solid #e8e8e4;border-radius:10px;padding:7px 10px;align-items:flex-end;transition:border-color .15s}
+.ai-input-wrap:focus-within{border-color:#185FA5;box-shadow:0 0 0 3px rgba(24,95,165,0.1)}
+.ai-ta{flex:1;background:transparent;border:none;outline:none;font-size:13px;color:#1a1a1a;resize:none;max-height:80px;min-height:20px;line-height:1.5;font-family:inherit}
+.ai-ta::placeholder{color:#aaa}
+.ai-send{width:32px;height:32px;border-radius:8px;background:#185FA5;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+.ai-send:hover{background:#1a4f8a}
+.ai-send:disabled{opacity:.4;cursor:not-allowed}
+.ai-send svg{width:14px;height:14px;fill:#fff}
+.ai-typing{display:flex;gap:4px;align-items:center;padding:9px 12px;background:#f0f4ff;border-radius:10px;border-bottom-left-radius:3px;align-self:flex-start}
+.ai-typing span{width:5px;height:5px;background:#185FA5;border-radius:50%;animation:aidot 1.2s infinite}
+.ai-typing span:nth-child(2){animation-delay:.2s}
+.ai-typing span:nth-child(3){animation-delay:.4s}
+@keyframes aidot{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+.ai-confirm{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;font-size:12px;color:#1a1a1a;align-self:stretch}
+.ai-confirm p{font-weight:600;margin-bottom:4px;color:#92400e}
+.ai-confirm .desc{color:#555;margin-bottom:10px;line-height:1.5}
+.ai-confirm-btns{display:flex;gap:6px}
+.btn-confirm{background:#185FA5;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer}
+.btn-confirm:hover{background:#1a4f8a}
+.btn-cancel-ai{background:#fff;color:#555;border:1px solid #d0d0cc;border-radius:7px;padding:6px 14px;font-size:12px;cursor:pointer}
+/* Botón IA en sidebar */
+.ai-sidebar-btn{display:flex;align-items:center;gap:8px;width:calc(100% - 12px);margin:4px 6px 0;padding:9px 12px;border:none;cursor:pointer;text-align:left;font-size:13px;border-radius:8px;background:linear-gradient(135deg,#EFF6FF,#ede9fe);color:#185FA5;font-weight:600;transition:opacity .15s}
+.ai-sidebar-btn:hover{opacity:.85}
+.ai-sidebar-btn .ai-dot-live{width:7px;height:7px;border-radius:50%;background:#22c55e;margin-left:auto;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body>
@@ -63,7 +108,7 @@ tr:hover>td{background:#fafaf8}
 <div x-show="!authLoad && session" style="display:flex;height:100vh;overflow:hidden">
 
   <!-- SIDEBAR -->
-  <div style="width:210px;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0">
+  <div style="width:210px;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;z-index:10">
     <div style="padding:20px 16px 16px;border-bottom:1px solid #e8e8e4">
       <p style="font-weight:700;font-size:15px">GestorPro</p>
       <p style="font-size:11px;color:#999;margin-top:3px">Palets Tarragona</p>
@@ -76,6 +121,14 @@ tr:hover>td{background:#fafaf8}
           <span x-text="n.l"></span>
         </button>
       </template>
+      <!-- BOTÓN CONSULTA IA -->
+      <div style="padding:12px 0 0">
+        <button class="ai-sidebar-btn" @click="aiToggle()">
+          <span style="font-size:14px">✦</span>
+          Consulta IA
+          <span class="ai-dot-live"></span>
+        </button>
+      </div>
     </nav>
     <div style="padding:14px 16px;border-top:1px solid #e8e8e4">
       <p style="font-size:11px;color:#999;margin:0 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="session?.user?.email||''"></p>
@@ -83,8 +136,8 @@ tr:hover>td{background:#fafaf8}
     </div>
   </div>
 
-  <!-- CONTENT -->
-  <div style="flex:1;overflow-y:auto;padding:28px;background:#f5f5f3">
+  <!-- CONTENT (se encoge cuando el panel IA está abierto) -->
+  <div :style="`flex:1;overflow-y:auto;padding:28px;background:#f5f5f3;transition:margin-right .28s;margin-right:${aiOpen?'360px':'0'}`">
     <div x-show="dataLoad" style="text-align:center;padding-top:80px;color:#999">Cargando datos...</div>
 
     <!-- DASHBOARD -->
@@ -239,6 +292,67 @@ tr:hover>td{background:#fafaf8}
       </div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('pedidos').length+' registros'"></p>
     </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PANEL AGENTE IA
+════════════════════════════════════════ -->
+<div class="ai-panel" :class="{open:aiOpen}" x-show="session">
+  <div class="ai-head">
+    <div class="ai-ava">✦</div>
+    <div>
+      <div class="ai-title">Asistente GestorPro</div>
+      <div style="font-size:11px;color:#22c55e;display:flex;align-items:center;gap:4px">
+        <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block"></span>
+        Conectado a tu base de datos
+      </div>
+    </div>
+    <button class="bs" style="padding:3px 9px;font-size:15px;margin-left:auto" @click="aiToggle()">✕</button>
+  </div>
+
+  <div class="ai-msgs" id="aiMsgs">
+    <template x-for="(m,i) in aiMsgs" :key="i">
+      <div>
+        <!-- Burbuja normal -->
+        <div x-show="m.type==='msg'" :class="`ai-bubble ${m.role}`" x-html="m.html"></div>
+        <!-- Bloque de confirmación de acción -->
+        <div x-show="m.type==='confirm'" class="ai-confirm">
+          <p>⚠️ Acción pendiente de confirmación</p>
+          <div class="desc" x-text="m.description"></div>
+          <div class="ai-confirm-btns">
+            <button class="btn-confirm" @click="aiExec(i, true)">✓ Confirmar</button>
+            <button class="btn-cancel-ai" @click="aiExec(i, false)">Cancelar</button>
+          </div>
+        </div>
+        <!-- Resultado de acción ejecutada -->
+        <div x-show="m.type==='done'" class="ai-bubble bot" x-html="m.html"></div>
+      </div>
+    </template>
+    <!-- Typing indicator -->
+    <div class="ai-typing" x-show="aiLoad">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- Chips de acceso rápido -->
+  <div class="ai-chips">
+    <span class="ai-chip" @click="aiQuick('¿Cuántas facturas hay pendientes de cobro?')">Facturas pendientes</span>
+    <span class="ai-chip" @click="aiQuick('¿Cuál es el total facturado?')">Total facturado</span>
+    <span class="ai-chip" @click="aiQuick('Lista todos los clientes')">Ver clientes</span>
+    <span class="ai-chip" @click="aiQuick('¿Qué pedidos están en curso?')">Pedidos en curso</span>
+    <span class="ai-chip" @click="aiQuick('Resume el estado general del negocio')">Resumen general</span>
+  </div>
+
+  <div class="ai-input-row">
+    <div class="ai-input-wrap">
+      <textarea class="ai-ta" x-model="aiInput" placeholder="Pregunta o pide una acción..." rows="1"
+        @keydown.enter.prevent="if(!$event.shiftKey) aiSend()"
+        @input="aiResize($event.target)"></textarea>
+    </div>
+    <button class="ai-send" @click="aiSend()" :disabled="aiLoad || !aiInput.trim()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
   </div>
 </div>
 
@@ -402,6 +516,7 @@ tr:hover>td{background:#fafaf8}
           </tbody>
         </table>
         <div style="text-align:right;border-top:1px solid #eee;padding-top:10px;margin-top:4px">
+          <p style="font-size:12px;color:#666;margin:0 0 3px" x-text="'Base imponible: '+fmt(tot(f.lineas))"></p>
           <p style="font-size:16px;font-weight:700;margin:0" x-text="'Total: '+fmt(tot(f.lineas))"></p>
         </div>
       </div>
@@ -423,20 +538,51 @@ function app(){
   const {createClient}=window.supabase;
   const sb=createClient('https://uludefpsovlfbodbihig.supabase.co','sb_publishable_HTl21hRegaA86sJgUmJ61w_02rjod9n');
   const ECOL={borrador:{bg:'#F1EFE8',c:'#5F5E5A'},enviada:{bg:'#dbeafe',c:'#1d4ed8'},enviado:{bg:'#dbeafe',c:'#1d4ed8'},pagada:{bg:'#dcfce7',c:'#166534'},recibido:{bg:'#dcfce7',c:'#166534'},cancelada:{bg:'#fee2e2',c:'#991b1b'},cancelado:{bg:'#fee2e2',c:'#991b1b'},pendiente:{bg:'#fef3c7',c:'#92400e'}};
+
+  // ── Utilidades de formato de texto para el agente ──
+  function md2html(t){
+    return t
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g,'<em>$1</em>')
+      .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/s,'<ul>$1</ul>')
+      .replace(/\n/g,'<br>');
+  }
+
   return {
+    // ── Estado general ──
     authLoad:true, dataLoad:false, session:null,
     lemail:'', lpass:'', lerr:'', lloading:false,
     sec:'dashboard', q:'',
     d:{clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[]},
     modal:null, f:{}, nl:{desc:'',qty:1,precio:''},
     serr:'',
-    nav:[{id:'dashboard',l:'Dashboard',s:'◉'},{id:'clientes',l:'Clientes',s:'◎'},{id:'proveedores',l:'Proveedores',s:'◈'},{id:'productos',l:'Productos',s:'▣'},{id:'facturas',l:'Facturas venta',s:'≡'},{id:'pedidos',l:'Pedidos compra',s:'⊕'}],
+    nav:[
+      {id:'dashboard',l:'Dashboard',s:'◉'},
+      {id:'clientes',l:'Clientes',s:'◎'},
+      {id:'proveedores',l:'Proveedores',s:'◈'},
+      {id:'productos',l:'Productos',s:'▣'},
+      {id:'facturas',l:'Facturas venta',s:'≡'},
+      {id:'pedidos',l:'Pedidos compra',s:'⊕'}
+    ],
 
+    // ── Estado del agente IA ──
+    aiOpen: false,
+    aiMsgs: [],
+    aiLoad: false,
+    aiInput: '',
+    aiHistory: [],  // historial para la API de Claude
+
+    // ── Init y carga ──
     async init(){
       const {data:{session}}=await sb.auth.getSession();
       this.session=session; this.authLoad=false;
-      if(session) this.load();
-      sb.auth.onAuthStateChange((_,s)=>{this.session=s; if(s) this.load(); else this.d={clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[]};});
+      if(session){ this.load(); this.aiWelcome(); }
+      sb.auth.onAuthStateChange((_,s)=>{
+        this.session=s;
+        if(s){ this.load(); this.aiWelcome(); }
+        else this.d={clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[]};
+      });
     },
     async load(){
       this.dataLoad=true;
@@ -462,6 +608,8 @@ function app(){
       this.lloading=false;
     },
     logout(){sb.auth.signOut();},
+
+    // ── Modales y formularios ──
     open(tipo,item=null){
       this.modal=tipo; this.nl={desc:'',qty:1,precio:''};
       if(tipo==='cliente'||tipo==='proveedor'){
@@ -524,7 +672,201 @@ function app(){
       {l:'Proveedores',v:this.d.proveedores.length,bg:'#ede9fe',c:'#6d28d9'},
       {l:'Facturas pendientes',v:this.d.facturas.filter(f=>f.estado==='enviada').length,bg:'#dbeafe',c:'#1d4ed8'},
       {l:'Pedidos en curso',v:this.d.pedidos.filter(p=>['enviado','borrador'].includes(p.estado)).length,bg:'#fef3c7',c:'#92400e'},
-    ];}
+    ];},
+
+    // ════════════════════════════════════════
+    // AGENTE IA
+    // ════════════════════════════════════════
+
+    aiWelcome(){
+      if(this.aiMsgs.length===0){
+        this.aiMsgs.push({
+          type:'msg', role:'bot',
+          html:'¡Hola! Soy tu asistente de GestorPro.<br><br>Tengo acceso a todos tus datos en tiempo real: clientes, proveedores, productos, facturas y pedidos. Puedo <strong>consultar</strong> cualquier información o <strong>crear, editar y eliminar</strong> registros (siempre pidiéndote confirmación antes).<br><br>¿En qué te puedo ayudar?'
+        });
+      }
+    },
+
+    aiToggle(){
+      this.aiOpen=!this.aiOpen;
+      if(this.aiOpen) this.$nextTick(()=>document.querySelector('.ai-ta')?.focus());
+    },
+
+    aiQuick(txt){ this.aiInput=txt; this.aiSend(); },
+
+    aiResize(el){
+      el.style.height='auto';
+      el.style.height=Math.min(el.scrollHeight,80)+'px';
+    },
+
+    // Construye el system prompt con todos los datos actuales
+    buildCtx(){
+      const uid = this.session?.user?.id||'';
+      const totalFacturado = this.d.facturas.reduce((s,f)=>s+this.tot(f.lineas),0);
+      const totalCompras = this.d.pedidos.reduce((s,p)=>s+this.tot(p.lineas),0);
+      const factPendientes = this.d.facturas.filter(f=>f.estado==='enviada');
+      const pedidosEnCurso = this.d.pedidos.filter(p=>['enviado','borrador'].includes(p.estado));
+
+      // Enriquecer facturas con nombre de cliente
+      const facturas = this.d.facturas.map(f=>({
+        ...f, cliente:this.cname(f.cliente_id),
+        total_con_iva: this.tot(f.lineas)*1.21
+      }));
+      // Enriquecer pedidos con nombre de proveedor
+      const pedidos = this.d.pedidos.map(p=>({
+        ...p, proveedor:this.pname(p.proveedor_id),
+        total: this.tot(p.lineas)
+      }));
+
+      return `Eres el asistente de inteligencia artificial integrado en GestorPro para Palets Tarragona.
+Tienes acceso en tiempo real a la base de datos del usuario (user_id: ${uid}).
+
+=== RESUMEN ACTUAL ===
+- Total facturado: ${this.fmt(totalFacturado)}
+- Total compras: ${this.fmt(totalCompras)}
+- Facturas pendientes de cobro (estado "enviada"): ${factPendientes.length}
+- Pedidos en curso: ${pedidosEnCurso.length}
+
+=== BASE DE DATOS ===
+
+CLIENTES (${this.d.clientes.length}):
+${JSON.stringify(this.d.clientes.map(c=>({id:c.id,nombre:c.nombre,nif:c.nif,email:c.email,telefono:c.telefono,ciudad:c.ciudad,notas:c.notas})),null,1)}
+
+PROVEEDORES (${this.d.proveedores.length}):
+${JSON.stringify(this.d.proveedores.map(p=>({id:p.id,nombre:p.nombre,nif:p.nif,email:p.email,telefono:p.telefono,ciudad:p.ciudad,notas:p.notas})),null,1)}
+
+PRODUCTOS (${this.d.productos.length}):
+${JSON.stringify(this.d.productos.map(p=>({id:p.id,nombre:p.nombre,categoria:p.categoria,precio_venta:p.precio_venta,precio_compra:p.precio_compra,stock:p.stock,unidad:p.unidad})),null,1)}
+
+FACTURAS (${this.d.facturas.length}):
+${JSON.stringify(facturas.map(f=>({id:f.id,numero:f.numero,fecha:f.fecha,cliente_id:f.cliente_id,cliente:f.cliente,estado:f.estado,lineas:f.lineas,total_con_iva:Math.round(f.total_con_iva*100)/100,notas:f.notas})),null,1)}
+
+PEDIDOS (${this.d.pedidos.length}):
+${JSON.stringify(pedidos.map(p=>({id:p.id,numero:p.numero,fecha:p.fecha,proveedor_id:p.proveedor_id,proveedor:p.proveedor,estado:p.estado,lineas:p.lineas,total:Math.round(p.total*100)/100,notas:p.notas})),null,1)}
+
+=== INSTRUCCIONES ===
+Responde siempre en español de España, de forma directa y concisa.
+Usa **negritas** para datos importantes.
+Para listas usa guiones (- item).
+
+Cuando el usuario pida CREAR, EDITAR o ELIMINAR un registro, responde con el texto explicativo Y al final incluye un bloque de acción con este formato exacto (sin alterar la estructura):
+
+ACCION_JSON:{"action":"create|update|delete","table":"clientes|proveedores|productos|facturas|pedidos","data":{...},"id":"id_si_update_o_delete","description":"descripción clara de lo que se va a hacer"}:FIN_ACCION
+
+Para UPDATE incluye solo los campos a cambiar en data, más el id del registro.
+Para DELETE solo necesitas id y table.
+Para CREATE en clientes/proveedores usa campos: nombre, nif, email, telefono, ciudad, notas.
+Para CREATE en productos: nombre, categoria, precio_venta, precio_compra, stock, unidad.
+Para CREATE en facturas: numero, fecha, cliente_id, estado, lineas (array de {desc,qty,precio}), notas.
+Para CREATE en pedidos: numero, fecha, proveedor_id, estado, lineas (array de {desc,qty,precio}), notas.
+
+Para consultas simples NO uses el bloque ACCION_JSON, responde directamente con la información.`;
+    },
+
+    async aiSend(){
+      const txt=this.aiInput.trim();
+      if(!txt||this.aiLoad) return;
+      this.aiInput='';
+      this.$nextTick(()=>{ const ta=document.querySelector('.ai-ta'); if(ta){ta.style.height='auto';} });
+
+      // Añadir mensaje del usuario
+      this.aiMsgs.push({type:'msg',role:'usr',html:txt});
+      this.aiHistory.push({role:'user',content:txt});
+      this.aiLoad=true;
+      this.$nextTick(()=>this.aiScrollBottom());
+
+      try{
+        const res=await fetch('https://api.anthropic.com/v1/messages',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            model:'claude-sonnet-4-20250514',
+            max_tokens:1500,
+            system:this.buildCtx(),
+            messages:this.aiHistory
+          })
+        });
+        const data=await res.json();
+        const raw=(data.content||[]).map(b=>b.text||'').join('');
+
+        this.aiHistory.push({role:'assistant',content:raw});
+        if(this.aiHistory.length>20) this.aiHistory=this.aiHistory.slice(-20);
+
+        this.aiLoad=false;
+
+        // ¿Contiene una acción?
+        const actionMatch=raw.match(/ACCION_JSON:([\s\S]+?):FIN_ACCION/);
+        if(actionMatch){
+          // Texto antes del bloque de acción
+          const textPart=raw.replace(/ACCION_JSON:[\s\S]+?:FIN_ACCION/,'').trim();
+          if(textPart) this.aiMsgs.push({type:'msg',role:'bot',html:md2html(textPart)});
+
+          let actionObj;
+          try{ actionObj=JSON.parse(actionMatch[1]); } catch(e){ actionObj=null; }
+
+          if(actionObj){
+            this.aiMsgs.push({
+              type:'confirm',
+              role:'bot',
+              actionObj,
+              description:actionObj.description||'Ejecutar acción en base de datos',
+              executed:false
+            });
+          }
+        } else {
+          this.aiMsgs.push({type:'msg',role:'bot',html:md2html(raw)});
+        }
+
+      } catch(e){
+        this.aiLoad=false;
+        this.aiMsgs.push({type:'msg',role:'bot',html:'❌ Error al conectar con el asistente. Inténtalo de nuevo.'});
+      }
+      this.$nextTick(()=>this.aiScrollBottom());
+    },
+
+    // Ejecutar o cancelar acción confirmada
+    async aiExec(idx, confirmed){
+      const m=this.aiMsgs[idx];
+      if(!m||m.executed) return;
+      m.executed=true; // evitar doble clic
+
+      if(!confirmed){
+        this.aiMsgs[idx]={type:'done',html:'❌ Acción cancelada.'};
+        return;
+      }
+
+      const {action,table,data,id}=m.actionObj;
+      let error=null;
+
+      try{
+        if(action==='create'){
+          const insert={...data, user_id:this.session.user.id};
+          const res=await sb.from(table).insert(insert);
+          error=res.error;
+        } else if(action==='update'){
+          const {user_id,created_at,...rest}=data||{};
+          const res=await sb.from(table).update(rest).eq('id',id);
+          error=res.error;
+        } else if(action==='delete'){
+          const res=await sb.from(table).delete().eq('id',id);
+          error=res.error;
+        }
+      } catch(e){ error={message:e.message}; }
+
+      if(error){
+        this.aiMsgs[idx]={type:'done',html:`❌ Error al ejecutar: ${error.message}`};
+      } else {
+        await this.reload(table);
+        const labels={create:'creado',update:'actualizado',delete:'eliminado'};
+        this.aiMsgs[idx]={type:'done',html:`✅ Registro ${labels[action]||'procesado'} correctamente en <strong>${table}</strong>. Los datos se han actualizado.`};
+      }
+      this.$nextTick(()=>this.aiScrollBottom());
+    },
+
+    aiScrollBottom(){
+      const el=document.getElementById('aiMsgs');
+      if(el) el.scrollTop=el.scrollHeight;
+    }
   };
 }
 </script>
