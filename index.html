@@ -776,7 +776,7 @@ Para consultas simples NO uses el bloque ACCION_JSON, responde directamente con 
       this.$nextTick(()=>this.aiScrollBottom());
 
       try{
-        const res=await fetch('https://api.anthropic.com/v1/messages',{
+        const res=await fetch('https://uludefpsovlfbodbihig.supabase.co/functions/v1/anthropic-proxy',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({
