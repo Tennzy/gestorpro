@@ -778,7 +778,7 @@ Para consultas simples NO uses el bloque ACCION_JSON, responde directamente con 
       try{
         const res=await fetch('https://uludefpsovlfbodbihig.supabase.co/functions/v1/anthropic-proxy',{
           method:'POST',
-          headers:{'Content-Type':'application/json'},
+          headers:{'Content-Type':'application/json','Authorization':'Bearer sb_publishable_HTl21hRegaA86sJgUmJ61w_02rjod9n'},
           body:JSON.stringify({
             model:'claude-sonnet-4-20250514',
             max_tokens:1500,
