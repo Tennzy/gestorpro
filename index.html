@@ -32,8 +32,7 @@ tr:hover>td{background:#fafaf8}
 .mb{background:#fff;border-radius:12px;border:1px solid #e0e0dc;width:100%;max-width:580px;max-height:82vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
 .mh{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #eee;position:sticky;top:0;background:#fff;z-index:1}
 .errbox{font-size:12px;color:#991b1b;background:#fee2e2;padding:8px 10px;border-radius:6px;margin-bottom:12px}
-
-/* ── AI PANEL ── */
+.nav-sep{padding:6px 16px 2px;font-size:10px;font-weight:600;color:#ccc;text-transform:uppercase;letter-spacing:.06em;margin-top:6px}
 .ai-panel{position:fixed;top:0;right:0;height:100vh;width:360px;background:#fff;border-left:1px solid #e8e8e4;display:flex;flex-direction:column;z-index:900;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(0,0,0,.08)}
 .ai-panel.open{transform:translateX(0)}
 .ai-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #eee;flex-shrink:0}
@@ -56,7 +55,7 @@ tr:hover>td{background:#fafaf8}
 .ai-input-wrap:focus-within{border-color:#185FA5;box-shadow:0 0 0 3px rgba(24,95,165,0.1)}
 .ai-ta{flex:1;background:transparent;border:none;outline:none;font-size:13px;color:#1a1a1a;resize:none;max-height:80px;min-height:20px;line-height:1.5;font-family:inherit}
 .ai-ta::placeholder{color:#aaa}
-.ai-send{width:32px;height:32px;border-radius:8px;background:#185FA5;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+.ai-send{width:32px;height:32px;border-radius:8px;background:#185FA5;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ai-send:hover{background:#1a4f8a}
 .ai-send:disabled{opacity:.4;cursor:not-allowed}
 .ai-send svg{width:14px;height:14px;fill:#fff}
@@ -65,51 +64,31 @@ tr:hover>td{background:#fafaf8}
 .ai-typing span:nth-child(2){animation-delay:.2s}
 .ai-typing span:nth-child(3){animation-delay:.4s}
 @keyframes aidot{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
-.ai-confirm{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;font-size:12px;color:#1a1a1a;align-self:stretch}
+.ai-confirm{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;font-size:12px;align-self:stretch}
 .ai-confirm p{font-weight:600;margin-bottom:4px;color:#92400e}
 .ai-confirm .desc{color:#555;margin-bottom:10px;line-height:1.5}
 .ai-confirm-btns{display:flex;gap:6px}
 .btn-confirm{background:#185FA5;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer}
 .btn-confirm:hover{background:#1a4f8a}
 .btn-cancel-ai{background:#fff;color:#555;border:1px solid #d0d0cc;border-radius:7px;padding:6px 14px;font-size:12px;cursor:pointer}
-/* Botón IA en sidebar */
-.ai-sidebar-btn{display:flex;align-items:center;gap:8px;width:calc(100% - 12px);margin:4px 6px 0;padding:9px 12px;border:none;cursor:pointer;text-align:left;font-size:13px;border-radius:8px;background:linear-gradient(135deg,#EFF6FF,#ede9fe);color:#185FA5;font-weight:600;transition:opacity .15s}
-.ai-sidebar-btn:hover{opacity:.85}
-.ai-sidebar-btn .ai-dot-live{width:7px;height:7px;border-radius:50%;background:#22c55e;margin-left:auto;animation:pulse 2s infinite}
+.ai-sb-btn{display:flex;align-items:center;gap:8px;width:calc(100% - 12px);margin:4px 6px 0;padding:9px 12px;border:none;cursor:pointer;text-align:left;font-size:13px;border-radius:8px;background:linear-gradient(135deg,#EFF6FF,#ede9fe);color:#185FA5;font-weight:600}
+.ai-sb-btn:hover{opacity:.85}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;margin-left:auto;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body>
 <div x-data="app()" x-init="init()" x-cloak>
 
-<!-- LOADING -->
 <div x-show="authLoad" style="height:100vh;display:flex;align-items:center;justify-content:center">
   <p style="color:#999;font-size:14px">Conectando...</p>
 </div>
 
-<!-- LOGIN -->
 <div x-show="!authLoad && !session" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f5f3;padding:20px">
   <div class="card" style="width:340px;padding:36px 44px">
     <div style="text-align:center;margin-bottom:28px">
       <div style="width:64px;height:64px;border-radius:16px;background:#185FA5;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-        <svg width="42" height="36" viewBox="0 0 42 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="1" y="1" width="11" height="5" rx="1" fill="white"/>
-          <rect x="15.5" y="1" width="11" height="5" rx="1" fill="white"/>
-          <rect x="30" y="1" width="11" height="5" rx="1" fill="white"/>
-          <rect x="3" y="6" width="4" height="9" rx="1" fill="#93bbdc"/>
-          <rect x="19" y="6" width="4" height="9" rx="1" fill="#93bbdc"/>
-          <rect x="35" y="6" width="4" height="9" rx="1" fill="#93bbdc"/>
-          <rect x="1" y="15" width="11" height="4" rx="1" fill="white"/>
-          <rect x="15.5" y="15" width="11" height="4" rx="1" fill="white"/>
-          <rect x="30" y="15" width="11" height="4" rx="1" fill="white"/>
-          <rect x="3" y="19" width="4" height="7" rx="1" fill="#93bbdc"/>
-          <rect x="19" y="19" width="4" height="7" rx="1" fill="#93bbdc"/>
-          <rect x="35" y="19" width="4" height="7" rx="1" fill="#93bbdc"/>
-          <rect x="1" y="26" width="40" height="5" rx="1" fill="white"/>
-          <rect x="1" y="31" width="11" height="4" rx="1" fill="#93bbdc"/>
-          <rect x="15.5" y="31" width="11" height="4" rx="1" fill="#93bbdc"/>
-          <rect x="30" y="31" width="11" height="4" rx="1" fill="#93bbdc"/>
-        </svg>
+        <svg width="42" height="36" viewBox="0 0 42 36" fill="none"><rect x="1" y="1" width="11" height="5" rx="1" fill="white"/><rect x="15.5" y="1" width="11" height="5" rx="1" fill="white"/><rect x="30" y="1" width="11" height="5" rx="1" fill="white"/><rect x="3" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="19" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="35" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="1" y="15" width="11" height="4" rx="1" fill="white"/><rect x="15.5" y="15" width="11" height="4" rx="1" fill="white"/><rect x="30" y="15" width="11" height="4" rx="1" fill="white"/><rect x="3" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="19" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="35" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="1" y="26" width="40" height="5" rx="1" fill="white"/><rect x="1" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="15.5" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="30" y="31" width="11" height="4" rx="1" fill="#93bbdc"/></svg>
       </div>
       <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">Palets Tarragona</h2>
       <p style="color:#999;font-size:13px">Panel de gestión</p>
@@ -123,39 +102,36 @@ tr:hover>td{background:#fafaf8}
   </div>
 </div>
 
-<!-- APP -->
 <div x-show="!authLoad && session" style="display:flex;height:100vh;overflow:hidden">
 
-  <!-- SIDEBAR -->
-  <div style="width:210px;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;z-index:10">
-    <div style="padding:20px 16px 16px;border-bottom:1px solid #e8e8e4">
+  <div style="width:215px;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto">
+    <div style="padding:18px 16px 14px;border-bottom:1px solid #e8e8e4;flex-shrink:0">
       <p style="font-weight:700;font-size:15px">GestorPro</p>
-      <p style="font-size:11px;color:#999;margin-top:3px">Palets Tarragona</p>
+      <p style="font-size:11px;color:#999;margin-top:2px">Palets Tarragona</p>
     </div>
-    <nav style="flex:1;padding-top:8px">
+    <nav style="flex:1;padding-top:6px">
+      <div class="nav-sep">General</div>
       <template x-for="n in nav" :key="n.id">
         <button @click="sec=n.id;q=''"
-          :style="`display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;border:none;cursor:pointer;text-align:left;font-size:13px;border-left:3px solid ${sec===n.id?'#185FA5':'transparent'};background:${sec===n.id?'#EFF6FF':'transparent'};color:${sec===n.id?'#1d4ed8':'#555'};font-weight:${sec===n.id?600:400}`">
-          <span style="font-family:monospace;font-size:14px" x-text="n.s"></span>
+          :style="`display:flex;align-items:center;gap:10px;width:100%;padding:8px 16px;border:none;cursor:pointer;text-align:left;font-size:13px;border-left:3px solid ${sec===n.id?'#185FA5':'transparent'};background:${sec===n.id?'#EFF6FF':'transparent'};color:${sec===n.id?'#1d4ed8':'#555'};font-weight:${sec===n.id?600:400}`">
+          <span style="font-family:monospace;font-size:13px" x-text="n.s"></span>
           <span x-text="n.l"></span>
         </button>
       </template>
-      <!-- BOTÓN CONSULTA IA -->
-      <div style="padding:12px 0 0">
-        <button class="ai-sidebar-btn" @click="aiToggle()">
+      <div style="padding:10px 0 0">
+        <button class="ai-sb-btn" @click="aiToggle()">
           <span style="font-size:14px">✦</span>
-          Consulta IA
-          <span class="ai-dot-live"></span>
+          Gestor IA
+          <span class="ai-dot"></span>
         </button>
       </div>
     </nav>
-    <div style="padding:14px 16px;border-top:1px solid #e8e8e4">
+    <div style="padding:12px 16px;border-top:1px solid #e8e8e4;flex-shrink:0">
       <p style="font-size:11px;color:#999;margin:0 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="session?.user?.email||''"></p>
       <button class="bs" style="width:100%" @click="logout()">Cerrar sesión</button>
     </div>
   </div>
 
-  <!-- CONTENT (se encoge cuando el panel IA está abierto) -->
   <div :style="`flex:1;overflow-y:auto;padding:28px;background:#f5f5f3;transition:margin-right .28s;margin-right:${aiOpen?'360px':'0'}`">
     <div x-show="dataLoad" style="text-align:center;padding-top:80px;color:#999">Cargando datos...</div>
 
@@ -173,17 +149,17 @@ tr:hover>td{background:#fafaf8}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div class="card" style="padding:16px">
           <p style="font-size:14px;font-weight:600;margin:0 0 12px">Últimas facturas</p>
-          <p x-show="!d.facturas.length" style="font-size:13px;color:#999">Sin registros todavía.</p>
+          <p x-show="!d.facturas.length" style="font-size:13px;color:#999">Sin registros.</p>
           <template x-for="it in d.facturas.slice(0,4)" :key="it.id">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0ee">
               <div><p style="font-size:13px;margin:0;font-weight:500" x-text="it.numero"></p><p style="font-size:11px;color:#999;margin:0" x-text="it.fecha"></p></div>
-              <div style="text-align:right"><span :style="bs(it.estado)" x-text="it.estado"></span><p style="font-size:12px;font-weight:600;margin:4px 0 0" x-text="fmt(tot(it.lineas))"></p></div>
+              <div style="text-align:right"><span :style="bs(it.estado)" x-text="it.estado"></span><p style="font-size:12px;font-weight:600;margin:4px 0 0" x-text="fmt(tot(it.lineas)*1.21)"></p></div>
             </div>
           </template>
         </div>
         <div class="card" style="padding:16px">
-          <p style="font-size:14px;font-weight:600;margin:0 0 12px">Últimos pedidos</p>
-          <p x-show="!d.pedidos.length" style="font-size:13px;color:#999">Sin registros todavía.</p>
+          <p style="font-size:14px;font-weight:600;margin:0 0 12px">Últimos pedidos compra</p>
+          <p x-show="!d.pedidos.length" style="font-size:13px;color:#999">Sin registros.</p>
           <template x-for="it in d.pedidos.slice(0,4)" :key="it.id">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0ee">
               <div><p style="font-size:13px;margin:0;font-weight:500" x-text="it.numero"></p><p style="font-size:11px;color:#999;margin:0" x-text="it.fecha"></p></div>
@@ -262,7 +238,7 @@ tr:hover>td{background:#fafaf8}
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('productos').length+' registros'"></p>
     </div>
 
-    <!-- FACTURAS -->
+    <!-- FACTURAS VENTA -->
     <div x-show="!dataLoad && sec==='facturas'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <h2 style="margin:0;font-size:18px;font-weight:700">Facturas de venta</h2><div style="flex:1"></div>
@@ -287,7 +263,32 @@ tr:hover>td{background:#fafaf8}
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('facturas').length+' registros'"></p>
     </div>
 
-    <!-- PEDIDOS -->
+    <!-- PEDIDOS VENTA -->
+    <div x-show="!dataLoad && sec==='pedidos_venta'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Pedidos de venta</h2><div style="flex:1"></div>
+        <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
+        <button class="bp" @click="open('pedido_venta')">+ Añadir</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th>Total</th><th></th></tr></thead>
+          <tbody>
+            <tr x-show="!filt('pedidos_venta').length"><td colspan="6" style="text-align:center;color:#999;padding:40px 0">Sin registros todavía.</td></tr>
+            <template x-for="it in filt('pedidos_venta')" :key="it.id"><tr>
+              <td x-text="it.numero"></td><td x-text="it.fecha"></td>
+              <td x-text="cname(it.cliente_id)"></td>
+              <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
+              <td><strong x-text="fmt(tot(it.lineas))"></strong></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('pedido_venta',it)">Editar</button><button class="bd" @click="del('pedidos_venta',it.id)">Eliminar</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('pedidos_venta').length+' registros'"></p>
+    </div>
+
+    <!-- PEDIDOS COMPRA -->
     <div x-show="!dataLoad && sec==='pedidos'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <h2 style="margin:0;font-size:18px;font-weight:700">Pedidos de compra</h2><div style="flex:1"></div>
@@ -311,17 +312,65 @@ tr:hover>td{background:#fafaf8}
       </div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('pedidos').length+' registros'"></p>
     </div>
+
+    <!-- ALBARANES VENTA -->
+    <div x-show="!dataLoad && sec==='albaranes_venta'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Albaranes de venta</h2><div style="flex:1"></div>
+        <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
+        <button class="bp" @click="open('albaran_venta')">+ Añadir</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th>Total</th><th></th></tr></thead>
+          <tbody>
+            <tr x-show="!filt('albaranes_venta').length"><td colspan="6" style="text-align:center;color:#999;padding:40px 0">Sin registros todavía.</td></tr>
+            <template x-for="it in filt('albaranes_venta')" :key="it.id"><tr>
+              <td x-text="it.numero"></td><td x-text="it.fecha"></td>
+              <td x-text="cname(it.cliente_id)"></td>
+              <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
+              <td><strong x-text="fmt(tot(it.lineas))"></strong></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('albaran_venta',it)">Editar</button><button class="bd" @click="del('albaranes_venta',it.id)">Eliminar</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('albaranes_venta').length+' registros'"></p>
+    </div>
+
+    <!-- ALBARANES COMPRA -->
+    <div x-show="!dataLoad && sec==='albaranes_compra'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Albaranes de compra</h2><div style="flex:1"></div>
+        <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
+        <button class="bp" @click="open('albaran_compra')">+ Añadir</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th>Número</th><th>Fecha</th><th>Proveedor</th><th>Estado</th><th>Total</th><th></th></tr></thead>
+          <tbody>
+            <tr x-show="!filt('albaranes_compra').length"><td colspan="6" style="text-align:center;color:#999;padding:40px 0">Sin registros todavía.</td></tr>
+            <template x-for="it in filt('albaranes_compra')" :key="it.id"><tr>
+              <td x-text="it.numero"></td><td x-text="it.fecha"></td>
+              <td x-text="pname(it.proveedor_id)"></td>
+              <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
+              <td><strong x-text="fmt(tot(it.lineas))"></strong></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('albaran_compra',it)">Editar</button><button class="bd" @click="del('albaranes_compra',it.id)">Eliminar</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('albaranes_compra').length+' registros'"></p>
+    </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     PANEL AGENTE IA
-════════════════════════════════════════ -->
+<!-- PANEL GESTOR IA -->
 <div class="ai-panel" :class="{open:aiOpen}" x-show="session">
   <div class="ai-head">
     <div class="ai-ava">✦</div>
     <div>
-      <div class="ai-title">Asistente GestorPro</div>
+      <div class="ai-title">Gestor IA</div>
       <div style="font-size:11px;color:#22c55e;display:flex;align-items:center;gap:4px">
         <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block"></span>
         Conectado a tu base de datos
@@ -329,40 +378,30 @@ tr:hover>td{background:#fafaf8}
     </div>
     <button class="bs" style="padding:3px 9px;font-size:15px;margin-left:auto" @click="aiToggle()">✕</button>
   </div>
-
   <div class="ai-msgs" id="aiMsgs">
     <template x-for="(m,i) in aiMsgs" :key="i">
       <div>
-        <!-- Burbuja normal -->
         <div x-show="m.type==='msg'" :class="`ai-bubble ${m.role}`" x-html="m.html"></div>
-        <!-- Bloque de confirmación de acción -->
         <div x-show="m.type==='confirm'" class="ai-confirm">
           <p>⚠️ Acción pendiente de confirmación</p>
           <div class="desc" x-text="m.description"></div>
           <div class="ai-confirm-btns">
-            <button class="btn-confirm" @click="aiExec(i, true)">✓ Confirmar</button>
-            <button class="btn-cancel-ai" @click="aiExec(i, false)">Cancelar</button>
+            <button class="btn-confirm" @click="aiExec(i,true)">✓ Confirmar</button>
+            <button class="btn-cancel-ai" @click="aiExec(i,false)">Cancelar</button>
           </div>
         </div>
-        <!-- Resultado de acción ejecutada -->
         <div x-show="m.type==='done'" class="ai-bubble bot" x-html="m.html"></div>
       </div>
     </template>
-    <!-- Typing indicator -->
-    <div class="ai-typing" x-show="aiLoad">
-      <span></span><span></span><span></span>
-    </div>
+    <div class="ai-typing" x-show="aiLoad"><span></span><span></span><span></span></div>
   </div>
-
-  <!-- Chips de acceso rápido -->
   <div class="ai-chips">
     <span class="ai-chip" @click="aiQuick('¿Cuántas facturas hay pendientes de cobro?')">Facturas pendientes</span>
     <span class="ai-chip" @click="aiQuick('¿Cuál es el total facturado?')">Total facturado</span>
     <span class="ai-chip" @click="aiQuick('Lista todos los clientes')">Ver clientes</span>
-    <span class="ai-chip" @click="aiQuick('¿Qué pedidos están en curso?')">Pedidos en curso</span>
+    <span class="ai-chip" @click="aiQuick('¿Qué pedidos de compra están en curso?')">Pedidos compra</span>
     <span class="ai-chip" @click="aiQuick('Resume el estado general del negocio')">Resumen general</span>
   </div>
-
   <div class="ai-input-row">
     <div class="ai-input-wrap">
       <textarea class="ai-ta" x-model="aiInput" placeholder="Pregunta o pide una acción..." rows="1"
@@ -375,13 +414,12 @@ tr:hover>td{background:#fafaf8}
   </div>
 </div>
 
-<!-- MODAL CONTACTO (cliente/proveedor) -->
+<!-- MODAL CONTACTO -->
 <div class="ov" x-show="modal==='cliente'||modal==='proveedor'" @click.self="modal=null">
   <div class="mb">
     <div class="mh">
       <h3 style="margin:0;font-size:15px;font-weight:600" x-text="(f.id?'Editar ':'Nuevo ')+modal"></h3>
-      <div style="flex:1"></div>
-      <button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+      <div style="flex:1"></div><button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
     </div>
     <div style="padding:20px">
       <div class="g2">
@@ -391,6 +429,8 @@ tr:hover>td{background:#fafaf8}
         <div class="fld"><label>Teléfono</label><input type="text" x-model="f.telefono" placeholder="900 000 000"></div>
         <div class="fld"><label>Ciudad</label><input type="text" x-model="f.ciudad" placeholder="Barcelona"></div>
       </div>
+      <div class="fld"><label>Dirección de envío</label><input type="text" x-model="f.direccion_envio" placeholder="Calle, número, CP, ciudad"></div>
+      <div class="fld"><label>Dirección de facturación</label><input type="text" x-model="f.direccion_facturacion" placeholder="Calle, número, CP, ciudad"></div>
       <div class="fld"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:60px"></textarea></div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="bs" @click="modal=null">Cancelar</button>
@@ -405,13 +445,12 @@ tr:hover>td{background:#fafaf8}
   <div class="mb">
     <div class="mh">
       <h3 style="margin:0;font-size:15px;font-weight:600" x-text="f.id?'Editar producto':'Nuevo producto'"></h3>
-      <div style="flex:1"></div>
-      <button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+      <div style="flex:1"></div><button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
     </div>
     <div style="padding:20px">
       <div class="fld"><label>Nombre *</label><input type="text" x-model="f.nombre" placeholder="Nombre descriptivo"></div>
       <div class="g2">
-        <div class="fld"><label>Categoría</label><input type="text" x-model="f.categoria" placeholder="Hardware, Servicios..."></div>
+        <div class="fld"><label>Categoría</label><input type="text" x-model="f.categoria" placeholder="Palets, Servicios..."></div>
         <div class="fld"><label>Unidad</label>
           <select x-model="f.unidad"><option>ud</option><option>hora</option><option>mes</option><option>año</option><option>kg</option><option>litro</option></select>
         </div>
@@ -432,29 +471,25 @@ tr:hover>td{background:#fafaf8}
   <div class="mb">
     <div class="mh">
       <h3 style="margin:0;font-size:15px;font-weight:600" x-text="f.id?'Editar factura':'Nueva factura'"></h3>
-      <div style="flex:1"></div>
-      <button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+      <div style="flex:1"></div><button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
     </div>
     <div style="padding:20px">
       <div class="g2">
         <div class="fld"><label>Nº Factura *</label><input type="text" x-model="f.numero" placeholder="F-2025-001"></div>
         <div class="fld"><label>Fecha</label><input type="date" x-model="f.fecha"></div>
         <div class="fld"><label>Cliente *</label>
-          <select x-model="f.cliente_id">
-            <option value="">— Seleccionar —</option>
+          <select x-model="f.cliente_id"><option value="">— Seleccionar —</option>
             <template x-for="c in d.clientes" :key="c.id"><option :value="String(c.id)" x-text="c.nombre"></option></template>
           </select>
         </div>
         <div class="fld"><label>Estado</label>
-          <select x-model="f.estado">
-            <option value="borrador">Borrador</option><option value="enviada">Enviada</option><option value="pagada">Pagada</option><option value="cancelada">Cancelada</option>
-          </select>
+          <select x-model="f.estado"><option value="borrador">Borrador</option><option value="enviada">Enviada</option><option value="pagada">Pagada</option><option value="cancelada">Cancelada</option></select>
         </div>
       </div>
       <p style="font-size:12px;color:#666;font-weight:500;margin-bottom:8px">Líneas</p>
       <div style="background:#f8f8f6;border-radius:8px;padding:12px;margin-bottom:10px;border:1px solid #eee">
         <div class="g3">
-          <div class="fld"><label>Descripción</label><input type="text" x-model="nl.desc" placeholder="Descripción del artículo" @keyup.enter="addL()"></div>
+          <div class="fld"><label>Descripción</label><input type="text" x-model="nl.desc" placeholder="Descripción" @keyup.enter="addL()"></div>
           <div class="fld"><label>Cant.</label><input type="number" x-model="nl.qty" min="1"></div>
           <div class="fld"><label>Precio (€)</label><input type="number" x-model="nl.precio" placeholder="0"></div>
           <button class="bp" style="margin-top:18px" @click="addL()">+</button>
@@ -465,8 +500,7 @@ tr:hover>td{background:#fafaf8}
           <thead><tr><th>Descripción</th><th style="text-align:right">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Total</th><th></th></tr></thead>
           <tbody>
             <template x-for="(l,i) in f.lineas" :key="i"><tr>
-              <td x-text="l.desc"></td>
-              <td style="text-align:right" x-text="l.qty"></td>
+              <td x-text="l.desc"></td><td style="text-align:right" x-text="l.qty"></td>
               <td style="text-align:right" x-text="fmt(l.precio)"></td>
               <td style="text-align:right;font-weight:600" x-text="fmt(l.qty*l.precio)"></td>
               <td><button class="bd" style="padding:1px 7px" @click="remL(i)">✕</button></td>
@@ -474,12 +508,12 @@ tr:hover>td{background:#fafaf8}
           </tbody>
         </table>
         <div style="text-align:right;border-top:1px solid #eee;padding-top:10px;margin-top:4px">
-          <p style="font-size:12px;color:#666;margin:0 0 3px" x-text="'Base imponible: '+fmt(tot(f.lineas))"></p>
+          <p style="font-size:12px;color:#666;margin:0 0 3px" x-text="'Base: '+fmt(tot(f.lineas))"></p>
           <p style="font-size:12px;color:#666;margin:0 0 3px" x-text="'IVA 21%: '+fmt(tot(f.lineas)*0.21)"></p>
           <p style="font-size:16px;font-weight:700;margin:0" x-text="'Total: '+fmt(tot(f.lineas)*1.21)"></p>
         </div>
       </div>
-      <div class="fld" style="margin-top:12px"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:50px" placeholder="Condiciones de pago, observaciones..."></textarea></div>
+      <div class="fld" style="margin-top:12px"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:50px"></textarea></div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="bs" @click="modal=null">Cancelar</button>
         <button class="bp" @click="saveDoc('facturas','cliente_id')">Guardar</button>
@@ -488,34 +522,30 @@ tr:hover>td{background:#fafaf8}
   </div>
 </div>
 
-<!-- MODAL PEDIDO -->
-<div class="ov" x-show="modal==='pedido'" @click.self="modal=null">
+<!-- MODAL PEDIDO VENTA -->
+<div class="ov" x-show="modal==='pedido_venta'" @click.self="modal=null">
   <div class="mb">
     <div class="mh">
-      <h3 style="margin:0;font-size:15px;font-weight:600" x-text="f.id?'Editar pedido':'Nuevo pedido de compra'"></h3>
-      <div style="flex:1"></div>
-      <button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+      <h3 style="margin:0;font-size:15px;font-weight:600" x-text="f.id?'Editar pedido venta':'Nuevo pedido de venta'"></h3>
+      <div style="flex:1"></div><button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
     </div>
     <div style="padding:20px">
       <div class="g2">
-        <div class="fld"><label>Nº Pedido *</label><input type="text" x-model="f.numero" placeholder="PC-2025-001"></div>
+        <div class="fld"><label>Nº Pedido *</label><input type="text" x-model="f.numero" placeholder="PV-2025-001"></div>
         <div class="fld"><label>Fecha</label><input type="date" x-model="f.fecha"></div>
-        <div class="fld"><label>Proveedor *</label>
-          <select x-model="f.proveedor_id">
-            <option value="">— Seleccionar —</option>
-            <template x-for="p in d.proveedores" :key="p.id"><option :value="String(p.id)" x-text="p.nombre"></option></template>
+        <div class="fld"><label>Cliente *</label>
+          <select x-model="f.cliente_id"><option value="">— Seleccionar —</option>
+            <template x-for="c in d.clientes" :key="c.id"><option :value="String(c.id)" x-text="c.nombre"></option></template>
           </select>
         </div>
         <div class="fld"><label>Estado</label>
-          <select x-model="f.estado">
-            <option value="borrador">Borrador</option><option value="enviado">Enviado</option><option value="recibido">Recibido</option><option value="cancelado">Cancelado</option>
-          </select>
+          <select x-model="f.estado"><option value="borrador">Borrador</option><option value="confirmado">Confirmado</option><option value="enviado">Enviado</option><option value="entregado">Entregado</option><option value="cancelado">Cancelado</option></select>
         </div>
       </div>
       <p style="font-size:12px;color:#666;font-weight:500;margin-bottom:8px">Líneas</p>
       <div style="background:#f8f8f6;border-radius:8px;padding:12px;margin-bottom:10px;border:1px solid #eee">
         <div class="g3">
-          <div class="fld"><label>Descripción</label><input type="text" x-model="nl.desc" placeholder="Descripción del artículo" @keyup.enter="addL()"></div>
+          <div class="fld"><label>Descripción</label><input type="text" x-model="nl.desc" @keyup.enter="addL()"></div>
           <div class="fld"><label>Cant.</label><input type="number" x-model="nl.qty" min="1"></div>
           <div class="fld"><label>Precio (€)</label><input type="number" x-model="nl.precio" placeholder="0"></div>
           <button class="bp" style="margin-top:18px" @click="addL()">+</button>
@@ -526,20 +556,72 @@ tr:hover>td{background:#fafaf8}
           <thead><tr><th>Descripción</th><th style="text-align:right">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Total</th><th></th></tr></thead>
           <tbody>
             <template x-for="(l,i) in f.lineas" :key="i"><tr>
-              <td x-text="l.desc"></td>
-              <td style="text-align:right" x-text="l.qty"></td>
+              <td x-text="l.desc"></td><td style="text-align:right" x-text="l.qty"></td>
               <td style="text-align:right" x-text="fmt(l.precio)"></td>
               <td style="text-align:right;font-weight:600" x-text="fmt(l.qty*l.precio)"></td>
               <td><button class="bd" style="padding:1px 7px" @click="remL(i)">✕</button></td>
             </tr></template>
           </tbody>
         </table>
-        <div style="text-align:right;border-top:1px solid #eee;padding-top:10px;margin-top:4px">
-          <p style="font-size:12px;color:#666;margin:0 0 3px" x-text="'Base imponible: '+fmt(tot(f.lineas))"></p>
+        <div style="text-align:right;border-top:1px solid #eee;padding-top:8px;margin-top:4px">
           <p style="font-size:16px;font-weight:700;margin:0" x-text="'Total: '+fmt(tot(f.lineas))"></p>
         </div>
       </div>
-      <div class="fld" style="margin-top:12px"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:50px" placeholder="Observaciones..."></textarea></div>
+      <div class="fld" style="margin-top:12px"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:50px"></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="bs" @click="modal=null">Cancelar</button>
+        <button class="bp" @click="saveDoc('pedidos_venta','cliente_id')">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PEDIDO COMPRA -->
+<div class="ov" x-show="modal==='pedido'" @click.self="modal=null">
+  <div class="mb">
+    <div class="mh">
+      <h3 style="margin:0;font-size:15px;font-weight:600" x-text="f.id?'Editar pedido':'Nuevo pedido de compra'"></h3>
+      <div style="flex:1"></div><button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="g2">
+        <div class="fld"><label>Nº Pedido *</label><input type="text" x-model="f.numero" placeholder="PC-2025-001"></div>
+        <div class="fld"><label>Fecha</label><input type="date" x-model="f.fecha"></div>
+        <div class="fld"><label>Proveedor *</label>
+          <select x-model="f.proveedor_id"><option value="">— Seleccionar —</option>
+            <template x-for="p in d.proveedores" :key="p.id"><option :value="String(p.id)" x-text="p.nombre"></option></template>
+          </select>
+        </div>
+        <div class="fld"><label>Estado</label>
+          <select x-model="f.estado"><option value="borrador">Borrador</option><option value="enviado">Enviado</option><option value="recibido">Recibido</option><option value="cancelado">Cancelado</option></select>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#666;font-weight:500;margin-bottom:8px">Líneas</p>
+      <div style="background:#f8f8f6;border-radius:8px;padding:12px;margin-bottom:10px;border:1px solid #eee">
+        <div class="g3">
+          <div class="fld"><label>Descripción</label><input type="text" x-model="nl.desc" @keyup.enter="addL()"></div>
+          <div class="fld"><label>Cant.</label><input type="number" x-model="nl.qty" min="1"></div>
+          <div class="fld"><label>Precio (€)</label><input type="number" x-model="nl.precio" placeholder="0"></div>
+          <button class="bp" style="margin-top:18px" @click="addL()">+</button>
+        </div>
+      </div>
+      <div x-show="f.lineas && f.lineas.length>0">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr><th>Descripción</th><th style="text-align:right">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Total</th><th></th></tr></thead>
+          <tbody>
+            <template x-for="(l,i) in f.lineas" :key="i"><tr>
+              <td x-text="l.desc"></td><td style="text-align:right" x-text="l.qty"></td>
+              <td style="text-align:right" x-text="fmt(l.precio)"></td>
+              <td style="text-align:right;font-weight:600" x-text="fmt(l.qty*l.precio)"></td>
+              <td><button class="bd" style="padding:1px 7px" @click="remL(i)">✕</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+        <div style="text-align:right;border-top:1px solid #eee;padding-top:8px;margin-top:4px">
+          <p style="font-size:16px;font-weight:700;margin:0" x-text="'Total: '+fmt(tot(f.lineas))"></p>
+        </div>
+      </div>
+      <div class="fld" style="margin-top:12px"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:50px"></textarea></div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="bs" @click="modal=null">Cancelar</button>
         <button class="bp" @click="saveDoc('pedidos','proveedor_id')">Guardar</button>
@@ -548,7 +630,114 @@ tr:hover>td{background:#fafaf8}
   </div>
 </div>
 
-<!-- ERROR TOAST -->
+<!-- MODAL ALBARAN VENTA -->
+<div class="ov" x-show="modal==='albaran_venta'" @click.self="modal=null">
+  <div class="mb">
+    <div class="mh">
+      <h3 style="margin:0;font-size:15px;font-weight:600" x-text="f.id?'Editar albarán venta':'Nuevo albarán de venta'"></h3>
+      <div style="flex:1"></div><button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="g2">
+        <div class="fld"><label>Nº Albarán *</label><input type="text" x-model="f.numero" placeholder="AV-2025-001"></div>
+        <div class="fld"><label>fecha</label><input type="date" x-model="f.fecha"></div>
+        <div class="fld"><label>Cliente *</label>
+          <select x-model="f.cliente_id"><option value="">— Seleccionar —</option>
+            <template x-for="c in d.clientes" :key="c.id"><option :value="String(c.id)" x-text="c.nombre"></option></template>
+          </select>
+        </div>
+        <div class="fld"><label>Estado</label>
+          <select x-model="f.estado"><option value="pendiente">Pendiente</option><option value="entregado">Entregado</option><option value="facturado">Facturado</option><option value="cancelado">Cancelado</option></select>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#666;font-weight:500;margin-bottom:8px">Líneas</p>
+      <div style="background:#f8f8f6;border-radius:8px;padding:12px;margin-bottom:10px;border:1px solid #eee">
+        <div class="g3">
+          <div class="fld"><label>Descripción</label><input type="text" x-model="nl.desc" @keyup.enter="addL()"></div>
+          <div class="fld"><label>Cant.</label><input type="number" x-model="nl.qty" min="1"></div>
+          <div class="fld"><label>Precio (€)</label><input type="number" x-model="nl.precio" placeholder="0"></div>
+          <button class="bp" style="margin-top:18px" @click="addL()">+</button>
+        </div>
+      </div>
+      <div x-show="f.lineas && f.lineas.length>0">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr><th>Descripción</th><th style="text-align:right">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Total</th><th></th></tr></thead>
+          <tbody>
+            <template x-for="(l,i) in f.lineas" :key="i"><tr>
+              <td x-text="l.desc"></td><td style="text-align:right" x-text="l.qty"></td>
+              <td style="text-align:right" x-text="fmt(l.precio)"></td>
+              <td style="text-align:right;font-weight:600" x-text="fmt(l.qty*l.precio)"></td>
+              <td><button class="bd" style="padding:1px 7px" @click="remL(i)">✕</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+        <div style="text-align:right;border-top:1px solid #eee;padding-top:8px;margin-top:4px">
+          <p style="font-size:16px;font-weight:700;margin:0" x-text="'Total: '+fmt(tot(f.lineas))"></p>
+        </div>
+      </div>
+      <div class="fld" style="margin-top:12px"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:50px"></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="bs" @click="modal=null">Cancelar</button>
+        <button class="bp" @click="saveDoc('albaranes_venta','cliente_id')">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALBARAN COMPRA -->
+<div class="ov" x-show="modal==='albaran_compra'" @click.self="modal=null">
+  <div class="mb">
+    <div class="mh">
+      <h3 style="margin:0;font-size:15px;font-weight:600" x-text="f.id?'Editar albarán compra':'Nuevo albarán de compra'"></h3>
+      <div style="flex:1"></div><button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="g2">
+        <div class="fld"><label>Nº Albarán *</label><input type="text" x-model="f.numero" placeholder="AC-2025-001"></div>
+        <div class="fld"><label>Fecha</label><input type="date" x-model="f.fecha"></div>
+        <div class="fld"><label>Proveedor *</label>
+          <select x-model="f.proveedor_id"><option value="">— Seleccionar —</option>
+            <template x-for="p in d.proveedores" :key="p.id"><option :value="String(p.id)" x-text="p.nombre"></option></template>
+          </select>
+        </div>
+        <div class="fld"><label>Estado</label>
+          <select x-model="f.estado"><option value="pendiente">Pendiente</option><option value="recibido">Recibido</option><option value="facturado">Facturado</option><option value="cancelado">Cancelado</option></select>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#666;font-weight:500;margin-bottom:8px">Líneas</p>
+      <div style="background:#f8f8f6;border-radius:8px;padding:12px;margin-bottom:10px;border:1px solid #eee">
+        <div class="g3">
+          <div class="fld"><label>Descripción</label><input type="text" x-model="nl.desc" @keyup.enter="addL()"></div>
+          <div class="fld"><label>Cant.</label><input type="number" x-model="nl.qty" min="1"></div>
+          <div class="fld"><label>Precio (€)</label><input type="number" x-model="nl.precio" placeholder="0"></div>
+          <button class="bp" style="margin-top:18px" @click="addL()">+</button>
+        </div>
+      </div>
+      <div x-show="f.lineas && f.lineas.length>0">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr><th>Descripción</th><th style="text-align:right">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Total</th><th></th></tr></thead>
+          <tbody>
+            <template x-for="(l,i) in f.lineas" :key="i"><tr>
+              <td x-text="l.desc"></td><td style="text-align:right" x-text="l.qty"></td>
+              <td style="text-align:right" x-text="fmt(l.precio)"></td>
+              <td style="text-align:right;font-weight:600" x-text="fmt(l.qty*l.precio)"></td>
+              <td><button class="bd" style="padding:1px 7px" @click="remL(i)">✕</button></td>
+            </tr></template>
+          </tbody>
+        </table>
+        <div style="text-align:right;border-top:1px solid #eee;padding-top:8px;margin-top:4px">
+          <p style="font-size:16px;font-weight:700;margin:0" x-text="'Total: '+fmt(tot(f.lineas))"></p>
+        </div>
+      </div>
+      <div class="fld" style="margin-top:12px"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:50px"></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="bs" @click="modal=null">Cancelar</button>
+        <button class="bp" @click="saveDoc('albaranes_compra','proveedor_id')">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div x-show="serr" style="position:fixed;bottom:24px;right:24px;background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:10px;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:2000" x-text="serr"></div>
 
 </div>
@@ -556,25 +745,15 @@ tr:hover>td{background:#fafaf8}
 function app(){
   const {createClient}=window.supabase;
   const sb=createClient('https://uludefpsovlfbodbihig.supabase.co','sb_publishable_HTl21hRegaA86sJgUmJ61w_02rjod9n');
-  const ECOL={borrador:{bg:'#F1EFE8',c:'#5F5E5A'},enviada:{bg:'#dbeafe',c:'#1d4ed8'},enviado:{bg:'#dbeafe',c:'#1d4ed8'},pagada:{bg:'#dcfce7',c:'#166534'},recibido:{bg:'#dcfce7',c:'#166534'},cancelada:{bg:'#fee2e2',c:'#991b1b'},cancelado:{bg:'#fee2e2',c:'#991b1b'},pendiente:{bg:'#fef3c7',c:'#92400e'}};
-
-  // ── Utilidades de formato de texto para el agente ──
-  function md2html(t){
-    return t
-      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g,'<em>$1</em>')
-      .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
-      .replace(/(<li>.*<\/li>)/s,'<ul>$1</ul>')
-      .replace(/\n/g,'<br>');
-  }
-
+  const ECOL={borrador:{bg:'#F1EFE8',c:'#5F5E5A'},confirmado:{bg:'#dbeafe',c:'#1d4ed8'},enviada:{bg:'#dbeafe',c:'#1d4ed8'},enviado:{bg:'#dbeafe',c:'#1d4ed8'},pagada:{bg:'#dcfce7',c:'#166534'},recibido:{bg:'#dcfce7',c:'#166534'},entregado:{bg:'#dcfce7',c:'#166534'},facturado:{bg:'#ede9fe',c:'#6d28d9'},cancelada:{bg:'#fee2e2',c:'#991b1b'},cancelado:{bg:'#fee2e2',c:'#991b1b'},pendiente:{bg:'#fef3c7',c:'#92400e'}};
+  function md2html(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/^[-•] (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>)/s,'<ul>$1</ul>').replace(/\n/g,'<br>');}
+  const TABLES_DOC=['facturas','pedidos','pedidos_venta','albaranes_venta','albaranes_compra'];
   return {
-    // ── Estado general ──
-    authLoad:true, dataLoad:false, session:null,
-    lemail:'', lpass:'', lerr:'', lloading:false,
-    sec:'dashboard', q:'',
-    d:{clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[]},
-    modal:null, f:{}, nl:{desc:'',qty:1,precio:''},
+    authLoad:true,dataLoad:false,session:null,
+    lemail:'',lpass:'',lerr:'',lloading:false,
+    sec:'dashboard',q:'',
+    d:{clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[],pedidos_venta:[],albaranes_venta:[],albaranes_compra:[]},
+    modal:null,f:{},nl:{desc:'',qty:1,precio:''},
     serr:'',
     nav:[
       {id:'dashboard',l:'Dashboard',s:'◉'},
@@ -582,106 +761,101 @@ function app(){
       {id:'proveedores',l:'Proveedores',s:'◈'},
       {id:'productos',l:'Productos',s:'▣'},
       {id:'facturas',l:'Facturas venta',s:'≡'},
-      {id:'pedidos',l:'Pedidos compra',s:'⊕'}
+      {id:'pedidos_venta',l:'Pedidos venta',s:'↗'},
+      {id:'pedidos',l:'Pedidos compra',s:'⊕'},
+      {id:'albaranes_venta',l:'Albaranes venta',s:'◧'},
+      {id:'albaranes_compra',l:'Albaranes compra',s:'◨'},
     ],
+    aiOpen:false,aiMsgs:[],aiLoad:false,aiInput:'',aiHistory:[],
 
-    // ── Estado del agente IA ──
-    aiOpen: false,
-    aiMsgs: [],
-    aiLoad: false,
-    aiInput: '',
-    aiHistory: [],  // historial para la API de Claude
-
-    // ── Init y carga ──
     async init(){
       const {data:{session}}=await sb.auth.getSession();
-      this.session=session; this.authLoad=false;
-      if(session){ this.load(); this.aiWelcome(); }
-      sb.auth.onAuthStateChange((_,s)=>{
-        this.session=s;
-        if(s){ this.load(); this.aiWelcome(); }
-        else this.d={clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[]};
-      });
+      this.session=session;this.authLoad=false;
+      if(session) this.load();
+      sb.auth.onAuthStateChange((_,s)=>{this.session=s;if(s)this.load();else this.d={clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[],pedidos_venta:[],albaranes_venta:[],albaranes_compra:[]};});
     },
+
     async load(){
       this.dataLoad=true;
-      const [a,b,c,e,f]=await Promise.all([
+      const [a,b,c,e,f,g,h,k]=await Promise.all([
         sb.from('clientes').select('*').order('nombre'),
         sb.from('proveedores').select('*').order('nombre'),
         sb.from('productos').select('*').order('nombre'),
         sb.from('facturas').select('*').order('created_at',{ascending:false}),
         sb.from('pedidos').select('*').order('created_at',{ascending:false}),
+        sb.from('pedidos_venta').select('*').order('created_at',{ascending:false}),
+        sb.from('albaranes_venta').select('*').order('created_at',{ascending:false}),
+        sb.from('albaranes_compra').select('*').order('created_at',{ascending:false}),
       ]);
-      this.d={clientes:a.data||[],proveedores:b.data||[],productos:c.data||[],facturas:e.data||[],pedidos:f.data||[]};
+      this.d={clientes:a.data||[],proveedores:b.data||[],productos:c.data||[],facturas:e.data||[],pedidos:f.data||[],pedidos_venta:g.data||[],albaranes_venta:h.data||[],albaranes_compra:k.data||[]};
       this.dataLoad=false;
     },
+
     async reload(t){
-      const isD=t==='facturas'||t==='pedidos';
+      const isD=TABLES_DOC.includes(t);
       const {data:r}=await sb.from(t).select('*').order(isD?'created_at':'nombre',{ascending:!isD});
       this.d={...this.d,[t]:r||[]};
     },
-    async login(){
-      this.lloading=true; this.lerr='';
-      const {error}=await sb.auth.signInWithPassword({email:this.lemail,password:this.lpass});
-      if(error) this.lerr='Email o contraseña incorrectos.';
-      this.lloading=false;
-    },
+
+    async login(){this.lloading=true;this.lerr='';const{error}=await sb.auth.signInWithPassword({email:this.lemail,password:this.lpass});if(error)this.lerr='Email o contraseña incorrectos.';this.lloading=false;},
     logout(){sb.auth.signOut();},
 
-    // ── Modales y formularios ──
     open(tipo,item=null){
-      this.modal=tipo; this.nl={desc:'',qty:1,precio:''};
+      this.modal=tipo;this.nl={desc:'',qty:1,precio:''};
       if(tipo==='cliente'||tipo==='proveedor'){
-        this.f=item?{...item}:{nombre:'',email:'',telefono:'',nif:'',ciudad:'',notas:''};
-      } else if(tipo==='producto'){
+        this.f=item?{...item}:{nombre:'',email:'',telefono:'',nif:'',ciudad:'',direccion_envio:'',direccion_facturacion:'',notas:''};
+      }else if(tipo==='producto'){
         this.f=item?{...item}:{nombre:'',categoria:'',precio_venta:'',precio_compra:'',stock:'',unidad:'ud'};
-      } else if(tipo==='factura'){
+      }else if(tipo==='factura'){
         this.f=item?{...item,cliente_id:String(item.cliente_id||'')}:{numero:'',fecha:this.hoy(),cliente_id:'',estado:'borrador',lineas:[],notas:''};
-      } else if(tipo==='pedido'){
+      }else if(tipo==='pedido'){
         this.f=item?{...item,proveedor_id:String(item.proveedor_id||'')}:{numero:'',fecha:this.hoy(),proveedor_id:'',estado:'borrador',lineas:[],notas:''};
+      }else if(tipo==='pedido_venta'){
+        this.f=item?{...item,cliente_id:String(item.cliente_id||'')}:{numero:'',fecha:this.hoy(),cliente_id:'',estado:'borrador',lineas:[],notas:''};
+      }else if(tipo==='albaran_venta'){
+        this.f=item?{...item,cliente_id:String(item.cliente_id||'')}:{numero:'',fecha:this.hoy(),cliente_id:'',estado:'pendiente',lineas:[],notas:''};
+      }else if(tipo==='albaran_compra'){
+        this.f=item?{...item,proveedor_id:String(item.proveedor_id||'')}:{numero:'',fecha:this.hoy(),proveedor_id:'',estado:'pendiente',lineas:[],notas:''};
       }
     },
+
     async saveContact(){
-      if(!this.f.nombre) return;
+      if(!this.f.nombre)return;
       const tabla=this.modal==='cliente'?'clientes':'proveedores';
-      const {id,user_id,created_at,...rest}=this.f;
-      const {error}=id? await sb.from(tabla).update(rest).eq('id',id) : await sb.from(tabla).insert({...rest,user_id:this.session.user.id});
+      const{id,user_id,created_at,...rest}=this.f;
+      const{error}=id?await sb.from(tabla).update(rest).eq('id',id):await sb.from(tabla).insert({...rest,user_id:this.session.user.id});
       if(error){this.err('Error: '+error.message);return;}
-      await this.reload(tabla); this.modal=null;
+      await this.reload(tabla);this.modal=null;
     },
     async saveProducto(){
-      if(!this.f.nombre) return;
-      const {id,user_id,created_at,...rest}=this.f;
-      const {error}=id? await sb.from('productos').update(rest).eq('id',id) : await sb.from('productos').insert({...rest,user_id:this.session.user.id});
+      if(!this.f.nombre)return;
+      const{id,user_id,created_at,...rest}=this.f;
+      const{error}=id?await sb.from('productos').update(rest).eq('id',id):await sb.from('productos').insert({...rest,user_id:this.session.user.id});
       if(error){this.err('Error: '+error.message);return;}
-      await this.reload('productos'); this.modal=null;
+      await this.reload('productos');this.modal=null;
     },
     async saveDoc(tabla,ck){
-      if(!this.f.numero||!this.f[ck]) return;
-      const {id,user_id,created_at,...rest}=this.f;
+      if(!this.f.numero||!this.f[ck])return;
+      const{id,user_id,created_at,...rest}=this.f;
       const sd={...rest,[ck]:Number(rest[ck])};
-      const {error}=id? await sb.from(tabla).update(sd).eq('id',id) : await sb.from(tabla).insert({...sd,user_id:this.session.user.id});
+      const{error}=id?await sb.from(tabla).update(sd).eq('id',id):await sb.from(tabla).insert({...sd,user_id:this.session.user.id});
       if(error){this.err('Error: '+error.message);return;}
-      await this.reload(tabla); this.modal=null;
+      await this.reload(tabla);this.modal=null;
     },
     addL(){if(!this.nl.desc)return;this.f.lineas=[...(this.f.lineas||[]),{desc:this.nl.desc,qty:Number(this.nl.qty),precio:Number(this.nl.precio)}];this.nl={desc:'',qty:1,precio:''};},
     remL(i){this.f.lineas=this.f.lineas.filter((_,idx)=>idx!==i);},
-    async del(t,id){
-      if(!confirm('¿Eliminar este registro?')) return;
-      await sb.from(t).delete().eq('id',id);
-      this.d={...this.d,[t]:this.d[t].filter(x=>x.id!==id)};
-    },
-    err(m){this.serr=m; setTimeout(()=>this.serr='',4000);},
+    async del(t,id){if(!confirm('¿Eliminar este registro?'))return;await sb.from(t).delete().eq('id',id);this.d={...this.d,[t]:this.d[t].filter(x=>x.id!==id)};},
+    err(m){this.serr=m;setTimeout(()=>this.serr='',4000);},
     filt(t){
-      const keys={clientes:['nombre','email','nif','ciudad'],proveedores:['nombre','email','nif','ciudad'],productos:['nombre','categoria'],facturas:['numero'],pedidos:['numero']};
-      if(!this.q) return this.d[t];
+      const keys={clientes:['nombre','email','nif','ciudad'],proveedores:['nombre','email','nif','ciudad'],productos:['nombre','categoria'],facturas:['numero'],pedidos:['numero'],pedidos_venta:['numero'],albaranes_venta:['numero'],albaranes_compra:['numero']};
+      if(!this.q)return this.d[t]||[];
       const q=this.q.toLowerCase();
-      return this.d[t].filter(i=>(keys[t]||[]).some(k=>String(i[k]||'').toLowerCase().includes(q)));
+      return(this.d[t]||[]).filter(i=>(keys[t]||[]).some(k=>String(i[k]||'').toLowerCase().includes(q)));
     },
     fmt:n=>Number(n).toLocaleString('es-ES',{style:'currency',currency:'EUR'}),
     tot:ls=>(ls||[]).reduce((s,l)=>s+Number(l.qty)*Number(l.precio),0),
     hoy:()=>new Date().toISOString().split('T')[0],
-    bs(e){const x=ECOL[e]||{bg:'#F1EFE8',c:'#5F5E5A'};return `background:${x.bg};color:${x.c};display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;text-transform:capitalize`;},
+    bs(e){const x=ECOL[e]||{bg:'#F1EFE8',c:'#5F5E5A'};return`background:${x.bg};color:${x.c};display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;text-transform:capitalize`;},
     cname(id){return this.d.clientes.find(c=>c.id===id)?.nombre||'—';},
     pname(id){return this.d.proveedores.find(p=>p.id===id)?.nombre||'—';},
     cards(){return[
@@ -690,202 +864,95 @@ function app(){
       {l:'Clientes',v:this.d.clientes.length,bg:'#dbeafe',c:'#1d4ed8'},
       {l:'Proveedores',v:this.d.proveedores.length,bg:'#ede9fe',c:'#6d28d9'},
       {l:'Facturas pendientes',v:this.d.facturas.filter(f=>f.estado==='enviada').length,bg:'#dbeafe',c:'#1d4ed8'},
-      {l:'Pedidos en curso',v:this.d.pedidos.filter(p=>['enviado','borrador'].includes(p.estado)).length,bg:'#fef3c7',c:'#92400e'},
+      {l:'Pedidos compra en curso',v:this.d.pedidos.filter(p=>['enviado','borrador'].includes(p.estado)).length,bg:'#fef3c7',c:'#92400e'},
     ];},
-
-    // ════════════════════════════════════════
-    // AGENTE IA
-    // ════════════════════════════════════════
-
-    aiWelcome(){
-      if(this.aiMsgs.length===0){
-        this.aiMsgs.push({
-          type:'msg', role:'bot',
-          html:'¡Hola! Soy tu asistente de GestorPro.<br><br>Tengo acceso a todos tus datos en tiempo real: clientes, proveedores, productos, facturas y pedidos. Puedo <strong>consultar</strong> cualquier información o <strong>crear, editar y eliminar</strong> registros (siempre pidiéndote confirmación antes).<br><br>¿En qué te puedo ayudar?'
-        });
-      }
-    },
 
     aiToggle(){
       this.aiOpen=!this.aiOpen;
-      if(this.aiOpen) this.$nextTick(()=>document.querySelector('.ai-ta')?.focus());
+      if(!this.aiOpen){this.aiMsgs=[];this.aiHistory=[];}
+      else this.$nextTick(()=>document.querySelector('.ai-ta')?.focus());
     },
+    aiQuick(txt){this.aiInput=txt;this.aiSend();},
+    aiResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';},
 
-    aiQuick(txt){ this.aiInput=txt; this.aiSend(); },
-
-    aiResize(el){
-      el.style.height='auto';
-      el.style.height=Math.min(el.scrollHeight,80)+'px';
-    },
-
-    // Construye el system prompt con todos los datos actuales
     buildCtx(){
-      const uid = this.session?.user?.id||'';
-      const totalFacturado = this.d.facturas.reduce((s,f)=>s+this.tot(f.lineas),0);
-      const totalCompras = this.d.pedidos.reduce((s,p)=>s+this.tot(p.lineas),0);
-      const factPendientes = this.d.facturas.filter(f=>f.estado==='enviada');
-      const pedidosEnCurso = this.d.pedidos.filter(p=>['enviado','borrador'].includes(p.estado));
+      const uid=this.session?.user?.id||'';
+      const tf=this.d.facturas.reduce((s,f)=>s+this.tot(f.lineas),0);
+      const tc=this.d.pedidos.reduce((s,p)=>s+this.tot(p.lineas),0);
+      const slim=arr=>arr.map(x=>{const{user_id,created_at,...r}=x;return r;});
+      return `Eres el Gestor IA de GestorPro para Palets Tarragona. Acceso completo a la base de datos en tiempo real (user: ${uid}).
 
-      // Enriquecer facturas con nombre de cliente
-      const facturas = this.d.facturas.map(f=>({
-        ...f, cliente:this.cname(f.cliente_id),
-        total_con_iva: this.tot(f.lineas)*1.21
-      }));
-      // Enriquecer pedidos con nombre de proveedor
-      const pedidos = this.d.pedidos.map(p=>({
-        ...p, proveedor:this.pname(p.proveedor_id),
-        total: this.tot(p.lineas)
-      }));
+RESUMEN: Total facturado ${this.fmt(tf)} | Total compras ${this.fmt(tc)} | Facturas pendientes ${this.d.facturas.filter(f=>f.estado==='enviada').length}
 
-      return `Eres el asistente de inteligencia artificial integrado en GestorPro para Palets Tarragona.
-Tienes acceso en tiempo real a la base de datos del usuario (user_id: ${uid}).
+CLIENTES(${this.d.clientes.length}):${JSON.stringify(this.d.clientes.map(c=>({id:c.id,nombre:c.nombre,nif:c.nif,email:c.email,telefono:c.telefono,ciudad:c.ciudad,dir_envio:c.direccion_envio,dir_fac:c.direccion_facturacion})))}
+PROVEEDORES(${this.d.proveedores.length}):${JSON.stringify(this.d.proveedores.map(p=>({id:p.id,nombre:p.nombre,nif:p.nif,email:p.email,telefono:p.telefono,ciudad:p.ciudad,dir_envio:p.direccion_envio,dir_fac:p.direccion_facturacion})))}
+PRODUCTOS(${this.d.productos.length}):${JSON.stringify(this.d.productos.map(p=>({id:p.id,nombre:p.nombre,categoria:p.categoria,pventa:p.precio_venta,pcompra:p.precio_compra,stock:p.stock,unidad:p.unidad})))}
+FACTURAS(${this.d.facturas.length}):${JSON.stringify(this.d.facturas.map(f=>({id:f.id,numero:f.numero,fecha:f.fecha,cliente:this.cname(f.cliente_id),cliente_id:f.cliente_id,estado:f.estado,total_iva:Math.round(this.tot(f.lineas)*1.21*100)/100,lineas:f.lineas})))}
+PEDIDOS_VENTA(${this.d.pedidos_venta.length}):${JSON.stringify(this.d.pedidos_venta.map(p=>({id:p.id,numero:p.numero,fecha:p.fecha,cliente:this.cname(p.cliente_id),cliente_id:p.cliente_id,estado:p.estado,total:Math.round(this.tot(p.lineas)*100)/100,lineas:p.lineas})))}
+PEDIDOS_COMPRA(${this.d.pedidos.length}):${JSON.stringify(this.d.pedidos.map(p=>({id:p.id,numero:p.numero,fecha:p.fecha,proveedor:this.pname(p.proveedor_id),proveedor_id:p.proveedor_id,estado:p.estado,total:Math.round(this.tot(p.lineas)*100)/100,lineas:p.lineas})))}
+ALBARANES_VENTA(${this.d.albaranes_venta.length}):${JSON.stringify(this.d.albaranes_venta.map(a=>({id:a.id,numero:a.numero,fecha:a.fecha,cliente:this.cname(a.cliente_id),cliente_id:a.cliente_id,estado:a.estado,total:Math.round(this.tot(a.lineas)*100)/100})))}
+ALBARANES_COMPRA(${this.d.albaranes_compra.length}):${JSON.stringify(this.d.albaranes_compra.map(a=>({id:a.id,numero:a.numero,fecha:a.fecha,proveedor:this.pname(a.proveedor_id),proveedor_id:a.proveedor_id,estado:a.estado,total:Math.round(this.tot(a.lineas)*100)/100})))}
 
-=== RESUMEN ACTUAL ===
-- Total facturado: ${this.fmt(totalFacturado)}
-- Total compras: ${this.fmt(totalCompras)}
-- Facturas pendientes de cobro (estado "enviada"): ${factPendientes.length}
-- Pedidos en curso: ${pedidosEnCurso.length}
-
-=== BASE DE DATOS ===
-
-CLIENTES (${this.d.clientes.length}):
-${JSON.stringify(this.d.clientes.map(c=>({id:c.id,nombre:c.nombre,nif:c.nif,email:c.email,telefono:c.telefono,ciudad:c.ciudad,notas:c.notas})),null,1)}
-
-PROVEEDORES (${this.d.proveedores.length}):
-${JSON.stringify(this.d.proveedores.map(p=>({id:p.id,nombre:p.nombre,nif:p.nif,email:p.email,telefono:p.telefono,ciudad:p.ciudad,notas:p.notas})),null,1)}
-
-PRODUCTOS (${this.d.productos.length}):
-${JSON.stringify(this.d.productos.map(p=>({id:p.id,nombre:p.nombre,categoria:p.categoria,precio_venta:p.precio_venta,precio_compra:p.precio_compra,stock:p.stock,unidad:p.unidad})),null,1)}
-
-FACTURAS (${this.d.facturas.length}):
-${JSON.stringify(facturas.map(f=>({id:f.id,numero:f.numero,fecha:f.fecha,cliente_id:f.cliente_id,cliente:f.cliente,estado:f.estado,lineas:f.lineas,total_con_iva:Math.round(f.total_con_iva*100)/100,notas:f.notas})),null,1)}
-
-PEDIDOS (${this.d.pedidos.length}):
-${JSON.stringify(pedidos.map(p=>({id:p.id,numero:p.numero,fecha:p.fecha,proveedor_id:p.proveedor_id,proveedor:p.proveedor,estado:p.estado,lineas:p.lineas,total:Math.round(p.total*100)/100,notas:p.notas})),null,1)}
-
-=== INSTRUCCIONES ===
-Responde siempre en español de España, de forma directa y concisa.
-Usa **negritas** para datos importantes.
-Para listas usa guiones (- item).
-
-Cuando el usuario pida CREAR, EDITAR o ELIMINAR un registro, responde con el texto explicativo Y al final incluye un bloque de acción con este formato exacto (sin alterar la estructura):
-
-ACCION_JSON:{"action":"create|update|delete","table":"clientes|proveedores|productos|facturas|pedidos","data":{...},"id":"id_si_update_o_delete","description":"descripción clara de lo que se va a hacer"}:FIN_ACCION
-
-Para UPDATE incluye solo los campos a cambiar en data, más el id del registro.
-Para DELETE solo necesitas id y table.
-Para CREATE en clientes/proveedores usa campos: nombre, nif, email, telefono, ciudad, notas.
-Para CREATE en productos: nombre, categoria, precio_venta, precio_compra, stock, unidad.
-Para CREATE en facturas: numero, fecha, cliente_id, estado, lineas (array de {desc,qty,precio}), notas.
-Para CREATE en pedidos: numero, fecha, proveedor_id, estado, lineas (array de {desc,qty,precio}), notas.
-
-Para consultas simples NO uses el bloque ACCION_JSON, responde directamente con la información.`;
+INSTRUCCIONES: Responde en español de España, directo y conciso. Usa **negritas** para datos clave y guiones para listas.
+Para CREAR/EDITAR/ELIMINAR añade al final:
+ACCION_JSON:{"action":"create|update|delete","table":"clientes|proveedores|productos|facturas|pedidos|pedidos_venta|albaranes_venta|albaranes_compra","data":{...},"id":"id_si_aplica","description":"descripción clara"}:FIN_ACCION
+Para consultas responde directamente sin el bloque.`;
     },
 
     async aiSend(){
       const txt=this.aiInput.trim();
-      if(!txt||this.aiLoad) return;
+      if(!txt||this.aiLoad)return;
       this.aiInput='';
-      this.$nextTick(()=>{ const ta=document.querySelector('.ai-ta'); if(ta){ta.style.height='auto';} });
-
-      // Añadir mensaje del usuario
+      this.$nextTick(()=>{const ta=document.querySelector('.ai-ta');if(ta)ta.style.height='auto';});
       this.aiMsgs.push({type:'msg',role:'usr',html:txt});
       this.aiHistory.push({role:'user',content:txt});
       this.aiLoad=true;
       this.$nextTick(()=>this.aiScrollBottom());
-
       try{
         const res=await fetch('https://uludefpsovlfbodbihig.supabase.co/functions/v1/anthropic-proxy',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            model:'claude-haiku-4-5-20251001',
-            max_tokens:1500,
-            system:this.buildCtx(),
-            messages:this.aiHistory
-          })
+          body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,system:this.buildCtx(),messages:this.aiHistory})
         });
         const data=await res.json();
         const raw=(data.content||[]).map(b=>b.text||'').join('');
-
         this.aiHistory.push({role:'assistant',content:raw});
-        if(this.aiHistory.length>20) this.aiHistory=this.aiHistory.slice(-20);
-
+        if(this.aiHistory.length>20)this.aiHistory=this.aiHistory.slice(-20);
         this.aiLoad=false;
-
-        // ¿Contiene una acción?
-        const actionMatch=raw.match(/ACCION_JSON:([\s\S]+?):FIN_ACCION/);
-        if(actionMatch){
-          // Texto antes del bloque de acción
-          const textPart=raw.replace(/ACCION_JSON:[\s\S]+?:FIN_ACCION/,'').trim();
-          if(textPart) this.aiMsgs.push({type:'msg',role:'bot',html:md2html(textPart)});
-
-          let actionObj;
-          try{ actionObj=JSON.parse(actionMatch[1]); } catch(e){ actionObj=null; }
-
-          if(actionObj){
-            this.aiMsgs.push({
-              type:'confirm',
-              role:'bot',
-              actionObj,
-              description:actionObj.description||'Ejecutar acción en base de datos',
-              executed:false
-            });
-          }
-        } else {
+        const am=raw.match(/ACCION_JSON:([\s\S]+?):FIN_ACCION/);
+        if(am){
+          const tp=raw.replace(/ACCION_JSON:[\s\S]+?:FIN_ACCION/,'').trim();
+          if(tp)this.aiMsgs.push({type:'msg',role:'bot',html:md2html(tp)});
+          let ao;try{ao=JSON.parse(am[1]);}catch(e){ao=null;}
+          if(ao)this.aiMsgs.push({type:'confirm',role:'bot',actionObj:ao,description:ao.description||'Ejecutar acción',executed:false});
+        }else{
           this.aiMsgs.push({type:'msg',role:'bot',html:md2html(raw)});
         }
-
-      } catch(e){
+      }catch(e){
         this.aiLoad=false;
-        this.aiMsgs.push({type:'msg',role:'bot',html:'❌ Error al conectar con el asistente. Inténtalo de nuevo.'});
+        this.aiMsgs.push({type:'msg',role:'bot',html:'❌ Error al conectar. Inténtalo de nuevo.'});
       }
       this.$nextTick(()=>this.aiScrollBottom());
     },
 
-    // Ejecutar o cancelar acción confirmada
-    async aiExec(idx, confirmed){
+    async aiExec(idx,confirmed){
       const m=this.aiMsgs[idx];
-      if(!m||m.executed) return;
-      m.executed=true; // evitar doble clic
-
-      if(!confirmed){
-        this.aiMsgs[idx]={type:'done',html:'❌ Acción cancelada.'};
-        return;
-      }
-
-      const {action,table,data,id}=m.actionObj;
+      if(!m||m.executed)return;
+      m.executed=true;
+      if(!confirmed){this.aiMsgs[idx]={type:'done',html:'❌ Acción cancelada.'};return;}
+      const{action,table,data,id}=m.actionObj;
       let error=null;
-
       try{
-        if(action==='create'){
-          const insert={...data, user_id:this.session.user.id};
-          const res=await sb.from(table).insert(insert);
-          error=res.error;
-        } else if(action==='update'){
-          const {user_id,created_at,...rest}=data||{};
-          const res=await sb.from(table).update(rest).eq('id',id);
-          error=res.error;
-        } else if(action==='delete'){
-          const res=await sb.from(table).delete().eq('id',id);
-          error=res.error;
-        }
-      } catch(e){ error={message:e.message}; }
-
-      if(error){
-        this.aiMsgs[idx]={type:'done',html:`❌ Error al ejecutar: ${error.message}`};
-      } else {
-        await this.reload(table);
-        const labels={create:'creado',update:'actualizado',delete:'eliminado'};
-        this.aiMsgs[idx]={type:'done',html:`✅ Registro ${labels[action]||'procesado'} correctamente en <strong>${table}</strong>. Los datos se han actualizado.`};
-      }
+        if(action==='create'){const r=await sb.from(table).insert({...data,user_id:this.session.user.id});error=r.error;}
+        else if(action==='update'){const{user_id,created_at,...rest}=data||{};const r=await sb.from(table).update(rest).eq('id',id);error=r.error;}
+        else if(action==='delete'){const r=await sb.from(table).delete().eq('id',id);error=r.error;}
+      }catch(e){error={message:e.message};}
+      if(error){this.aiMsgs[idx]={type:'done',html:`❌ Error: ${error.message}`};}
+      else{await this.reload(table);const lb={create:'creado',update:'actualizado',delete:'eliminado'};this.aiMsgs[idx]={type:'done',html:`✅ Registro ${lb[action]||'procesado'} en <strong>${table}</strong>.`};}
       this.$nextTick(()=>this.aiScrollBottom());
     },
 
-    aiScrollBottom(){
-      const el=document.getElementById('aiMsgs');
-      if(el) el.scrollTop=el.scrollHeight;
-    }
+    aiScrollBottom(){const el=document.getElementById('aiMsgs');if(el)el.scrollTop=el.scrollHeight;}
   };
 }
 </script>
