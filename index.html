@@ -137,7 +137,7 @@ tr:hover>td{background:#fafaf8}
     <div x-show="dataLoad" style="text-align:center;padding-top:80px;color:#999">Cargando datos...</div>
 
     <!-- DASHBOARD -->
-    <div x-show="!dataLoad && sec==='dashboard'">
+    <div x-show="sec==='dashboard'">
       <h2 style="margin:0 0 20px;font-size:18px;font-weight:700">Resumen general</h2>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
         <template x-for="c in cards()" :key="c.l">
@@ -172,7 +172,7 @@ tr:hover>td{background:#fafaf8}
     </div>
 
     <!-- CLIENTES -->
-    <div x-show="!dataLoad && sec==='clientes'">
+    <div x-show="sec==='clientes'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <h2 style="margin:0;font-size:18px;font-weight:700">Clientes</h2><div style="flex:1"></div>
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
@@ -194,7 +194,7 @@ tr:hover>td{background:#fafaf8}
     </div>
 
     <!-- PROVEEDORES -->
-    <div x-show="!dataLoad && sec==='proveedores'">
+    <div x-show="sec==='proveedores'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <h2 style="margin:0;font-size:18px;font-weight:700">Proveedores</h2><div style="flex:1"></div>
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
@@ -216,7 +216,7 @@ tr:hover>td{background:#fafaf8}
     </div>
 
     <!-- PRODUCTOS -->
-    <div x-show="!dataLoad && sec==='productos'">
+    <div x-show="sec==='productos'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <h2 style="margin:0;font-size:18px;font-weight:700">Productos e inventario</h2><div style="flex:1"></div>
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
@@ -240,7 +240,7 @@ tr:hover>td{background:#fafaf8}
     </div>
 
     <!-- FACTURAS VENTA -->
-    <div x-show="!dataLoad && sec==='facturas'">
+    <div x-show="sec==='facturas'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <h2 style="margin:0;font-size:18px;font-weight:700">Facturas de venta</h2><div style="flex:1"></div>
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
@@ -265,7 +265,7 @@ tr:hover>td{background:#fafaf8}
     </div>
 
     <!-- PEDIDOS VENTA -->
-    <div x-show="!dataLoad && sec==='pedidos_venta'">
+    <div x-show="sec==='pedidos_venta'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <h2 style="margin:0;font-size:18px;font-weight:700">Pedidos de venta</h2><div style="flex:1"></div>
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
@@ -290,7 +290,7 @@ tr:hover>td{background:#fafaf8}
     </div>
 
     <!-- PEDIDOS COMPRA -->
-    <div x-show="!dataLoad && sec==='pedidos'">
+    <div x-show="sec==='pedidos'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <h2 style="margin:0;font-size:18px;font-weight:700">Pedidos de compra</h2><div style="flex:1"></div>
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
@@ -315,7 +315,7 @@ tr:hover>td{background:#fafaf8}
     </div>
 
     <!-- ALBARANES VENTA -->
-    <div x-show="!dataLoad && sec==='albaranes_venta'">
+    <div x-show="sec==='albaranes_venta'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <h2 style="margin:0;font-size:18px;font-weight:700">Albaranes de venta</h2><div style="flex:1"></div>
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
@@ -340,7 +340,7 @@ tr:hover>td{background:#fafaf8}
     </div>
 
     <!-- ALBARANES COMPRA -->
-    <div x-show="!dataLoad && sec==='albaranes_compra'">
+    <div x-show="sec==='albaranes_compra'">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <h2 style="margin:0;font-size:18px;font-weight:700">Albaranes de compra</h2><div style="flex:1"></div>
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
@@ -903,7 +903,16 @@ ALBARANES_COMPRA(${this.d.albaranes_compra.length}):${JSON.stringify(this.d.alba
 INSTRUCCIONES: Responde en español de España, directo y conciso. Usa **negritas** para datos clave y guiones para listas.
 Para CREAR/EDITAR/ELIMINAR añade al final:
 ACCION_JSON:{"action":"create|update|delete","table":"clientes|proveedores|productos|facturas|pedidos|pedidos_venta|albaranes_venta|albaranes_compra","data":{...},"id":"id_si_aplica","description":"descripción clara"}:FIN_ACCION
-Para consultas responde directamente sin el bloque.`;
+Para consultas responde directamente sin el bloque.
+
+CAMPOS EXACTOS POR TABLA (usa SOLO estos, ninguno más):
+- clientes/proveedores: nombre, nif, email, telefono, ciudad, direccion_envio, direccion_facturacion, notas
+- productos: nombre, categoria, precio_venta, precio_compra, stock, unidad
+- facturas: numero, fecha, cliente_id, estado (borrador/enviada/pagada/cancelada), lineas (array {desc,qty,precio}), notas
+- pedidos_venta: numero, fecha, cliente_id, estado (borrador/confirmado/enviado/entregado/cancelado), lineas, notas
+- pedidos: numero, fecha, proveedor_id, estado (borrador/enviado/recibido/cancelado), lineas, notas
+- albaranes_venta: numero, fecha, cliente_id, estado (pendiente/entregado/facturado/cancelado), lineas, notas
+- albaranes_compra: numero, fecha, proveedor_id, estado (pendiente/recibido/facturado/cancelado), lineas, notas`;
     },
 
     async aiSend(){
