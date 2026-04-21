@@ -102,9 +102,9 @@ tr:hover>td{background:#fafaf8}
   </div>
 </div>
 
-<div x-show="!authLoad && session" style="display:flex;height:100vh;overflow:hidden">
+<div x-show="!authLoad && session" style="display:flex;height:100vh;overflow:hidden;position:relative">
 
-  <div style="width:215px;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto">
+  <div style="width:215px;min-width:215px;height:100vh;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto">
     <div style="padding:18px 16px 14px;border-bottom:1px solid #e8e8e4;flex-shrink:0">
       <p style="font-weight:700;font-size:15px">GestorPro</p>
       <p style="font-size:11px;color:#999;margin-top:2px">Palets Tarragona</p>
@@ -132,7 +132,7 @@ tr:hover>td{background:#fafaf8}
     </div>
   </div>
 
-  <div :style="`flex:1;overflow-y:auto;padding:28px;background:#f5f5f3;transition:margin-right .28s;margin-right:${aiOpen?'360px':'0'}`">
+  <div :style="`flex:1;min-width:0;height:100vh;overflow-y:auto;padding:28px;background:#f5f5f3;transition:margin-right .28s;margin-right:${aiOpen?'360px':'0'}`">
     <div x-show="dataLoad" style="text-align:center;padding-top:80px;color:#999">Cargando datos...</div>
 
     <!-- DASHBOARD -->
@@ -777,18 +777,23 @@ function app(){
 
     async load(){
       this.dataLoad=true;
-      const [a,b,c,e,f,g,h,k]=await Promise.all([
-        sb.from('clientes').select('*').order('nombre'),
-        sb.from('proveedores').select('*').order('nombre'),
-        sb.from('productos').select('*').order('nombre'),
-        sb.from('facturas').select('*').order('created_at',{ascending:false}),
-        sb.from('pedidos').select('*').order('created_at',{ascending:false}),
-        sb.from('pedidos_venta').select('*').order('created_at',{ascending:false}),
-        sb.from('albaranes_venta').select('*').order('created_at',{ascending:false}),
-        sb.from('albaranes_compra').select('*').order('created_at',{ascending:false}),
-      ]);
-      this.d={clientes:a.data||[],proveedores:b.data||[],productos:c.data||[],facturas:e.data||[],pedidos:f.data||[],pedidos_venta:g.data||[],albaranes_venta:h.data||[],albaranes_compra:k.data||[]};
-      this.dataLoad=false;
+      try{
+        const [a,b,c,e,f,g,h,k]=await Promise.all([
+          sb.from('clientes').select('*').order('nombre'),
+          sb.from('proveedores').select('*').order('nombre'),
+          sb.from('productos').select('*').order('nombre'),
+          sb.from('facturas').select('*').order('created_at',{ascending:false}),
+          sb.from('pedidos').select('*').order('created_at',{ascending:false}),
+          sb.from('pedidos_venta').select('*').order('created_at',{ascending:false}),
+          sb.from('albaranes_venta').select('*').order('created_at',{ascending:false}),
+          sb.from('albaranes_compra').select('*').order('created_at',{ascending:false}),
+        ]);
+        this.d={clientes:a.data||[],proveedores:b.data||[],productos:c.data||[],facturas:e.data||[],pedidos:f.data||[],pedidos_venta:g.data||[],albaranes_venta:h.data||[],albaranes_compra:k.data||[]};
+      }catch(e){
+        console.error('Error cargando datos:',e);
+      }finally{
+        this.dataLoad=false;
+      }
     },
 
     async reload(t){
