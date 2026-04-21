@@ -75,6 +75,29 @@ tr:hover>td{background:#fafaf8}
 .ai-sb-btn:hover{opacity:.85}
 .ai-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;margin-left:auto;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ── MÓVIL ── */
+.mob-topbar{display:none;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #e8e8e4;position:sticky;top:0;z-index:50;flex-shrink:0}
+.mob-topbar h1{font-size:15px;font-weight:700}
+.mob-menu-btn{background:none;border:none;cursor:pointer;padding:4px;display:flex;flex-direction:column;gap:5px}
+.mob-menu-btn span{display:block;width:20px;height:2px;background:#1a1a1a;border-radius:2px}
+.mob-ai-btn{background:linear-gradient(135deg,#EFF6FF,#ede9fe);border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;color:#185FA5;cursor:pointer;display:flex;align-items:center;gap:5px}
+.mob-drawer{position:fixed;inset:0;z-index:800;display:none}
+.mob-drawer.open{display:block}
+.mob-drawer-bg{position:absolute;inset:0;background:rgba(0,0,0,.4)}
+.mob-drawer-panel{position:absolute;top:0;left:0;width:260px;height:100vh;background:#fff;display:flex;flex-direction:column;overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.12);transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.mob-drawer.open .mob-drawer-panel{transform:translateX(0)}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:768px){
+  .mob-topbar{display:flex}
+  .desk-sidebar{display:none!important}
+  .main-content{padding:16px!important;padding-bottom:20px!important}
+  .ai-panel{width:100%!important}
+  table{min-width:480px}
+  .g2{grid-template-columns:1fr!important}
+  .g3{grid-template-columns:1fr 55px 75px auto!important;gap:5px!important}
+  .ov{padding-top:10px!important;padding-left:8px!important;padding-right:8px!important;align-items:flex-start}
+  .mb{max-height:94vh!important;border-radius:12px 12px 0 0}
+}
 </style>
 </head>
 <body>
@@ -103,9 +126,49 @@ tr:hover>td{background:#fafaf8}
 </div>
 
 <div x-show="!authLoad && session">
+
+<!-- TOPBAR MÓVIL -->
+<div class="mob-topbar">
+  <button class="mob-menu-btn" @click="mobMenu=true">
+    <span></span><span></span><span></span>
+  </button>
+  <h1>Palets Tarragona</h1>
+  <button class="mob-ai-btn" @click="aiToggle()">✦ Gestor IA</button>
+</div>
+
+<!-- DRAWER MÓVIL -->
+<div class="mob-drawer" :class="{open:mobMenu}" x-show="mobMenu">
+  <div class="mob-drawer-bg" @click="mobMenu=false"></div>
+  <div class="mob-drawer-panel">
+    <div style="padding:18px 16px 14px;border-bottom:1px solid #e8e8e4">
+      <p style="font-weight:700;font-size:15px">GestorPro</p>
+      <p style="font-size:11px;color:#999;margin-top:2px">Palets Tarragona</p>
+    </div>
+    <nav style="flex:1;padding-top:6px">
+      <template x-for="n in nav" :key="n.id">
+        <button @click="sec=n.id;q='';mobMenu=false"
+          :style="`display:flex;align-items:center;gap:10px;width:100%;padding:11px 16px;border:none;cursor:pointer;text-align:left;font-size:14px;border-left:3px solid ${sec===n.id?'#185FA5':'transparent'};background:${sec===n.id?'#EFF6FF':'transparent'};color:${sec===n.id?'#1d4ed8':'#555'};font-weight:${sec===n.id?600:400}`">
+          <span style="font-family:monospace;font-size:14px" x-text="n.s"></span>
+          <span x-text="n.l"></span>
+        </button>
+      </template>
+      <div style="padding:10px 0 0">
+        <button class="ai-sb-btn" @click="aiToggle();mobMenu=false">
+          <span style="font-size:14px">✦</span> Gestor IA
+          <span class="ai-dot"></span>
+        </button>
+      </div>
+    </nav>
+    <div style="padding:12px 16px;border-top:1px solid #e8e8e4">
+      <p style="font-size:11px;color:#999;margin:0 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="session?.user?.email||''"></p>
+      <button class="bs" style="width:100%" @click="logout()">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
+
 <div style="display:flex;height:100vh;overflow:hidden">
 
-  <div style="width:215px;min-width:215px;height:100vh;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto">
+  <div class="desk-sidebar" style="width:215px;min-width:215px;height:100vh;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto">
     <div style="padding:18px 16px 14px;border-bottom:1px solid #e8e8e4;flex-shrink:0">
       <p style="font-weight:700;font-size:15px">GestorPro</p>
       <p style="font-size:11px;color:#999;margin-top:2px">Palets Tarragona</p>
@@ -133,13 +196,13 @@ tr:hover>td{background:#fafaf8}
     </div>
   </div>
 
-  <div :style="`flex:1;min-width:0;overflow-y:auto;padding:28px;background:#f5f5f3;transition:margin-right .28s;margin-right:${aiOpen?'360px':'0'}`">
+  <div class="main-content" :style="`flex:1;min-width:0;overflow-y:auto;padding:28px;background:#f5f5f3;transition:margin-right .28s;margin-right:${aiOpen?'360px':'0'}`">
     <div x-show="dataLoad" style="text-align:center;padding-top:80px;color:#999">Cargando datos...</div>
 
     <!-- DASHBOARD -->
     <div x-show="sec==='dashboard'">
       <h2 style="margin:0 0 20px;font-size:18px;font-weight:700">Resumen general</h2>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
+      <div class="dashboard-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
         <template x-for="c in cards()" :key="c.l">
           <div :style="`border-radius:12px;padding:16px 18px;background:${c.bg}`">
             <p :style="`font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px;color:${c.c}`" x-text="c.l"></p>
@@ -147,7 +210,7 @@ tr:hover>td{background:#fafaf8}
           </div>
         </template>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="dashboard-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div class="card" style="padding:16px">
           <p style="font-size:14px;font-weight:600;margin:0 0 12px">Últimas facturas</p>
           <p x-show="!d.facturas.length" style="font-size:13px;color:#999">Sin registros.</p>
@@ -178,7 +241,7 @@ tr:hover>td{background:#fafaf8}
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
         <button class="bp" @click="open('cliente')">+ Añadir</button>
       </div>
-      <div class="card" style="overflow:hidden">
+      <div class="tbl-wrap"><div class="card" style="overflow:hidden">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr><th>Nombre</th><th>NIF/CIF</th><th>Email</th><th>Teléfono</th><th>Ciudad</th><th></th></tr></thead>
           <tbody>
@@ -189,7 +252,7 @@ tr:hover>td{background:#fafaf8}
             </tr></template>
           </tbody>
         </table>
-      </div>
+      </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('clientes').length+' registros'"></p>
     </div>
 
@@ -200,7 +263,7 @@ tr:hover>td{background:#fafaf8}
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
         <button class="bp" @click="open('proveedor')">+ Añadir</button>
       </div>
-      <div class="card" style="overflow:hidden">
+      <div class="tbl-wrap"><div class="card" style="overflow:hidden">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr><th>Nombre</th><th>NIF/CIF</th><th>Email</th><th>Teléfono</th><th>Ciudad</th><th></th></tr></thead>
           <tbody>
@@ -211,7 +274,7 @@ tr:hover>td{background:#fafaf8}
             </tr></template>
           </tbody>
         </table>
-      </div>
+      </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('proveedores').length+' registros'"></p>
     </div>
 
@@ -222,7 +285,7 @@ tr:hover>td{background:#fafaf8}
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
         <button class="bp" @click="open('producto')">+ Añadir</button>
       </div>
-      <div class="card" style="overflow:hidden">
+      <div class="tbl-wrap"><div class="card" style="overflow:hidden">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr><th>Producto</th><th>Categoría</th><th>P. Venta</th><th>P. Compra</th><th>Stock</th><th></th></tr></thead>
           <tbody>
@@ -235,7 +298,7 @@ tr:hover>td{background:#fafaf8}
             </tr></template>
           </tbody>
         </table>
-      </div>
+      </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('productos').length+' registros'"></p>
     </div>
 
@@ -246,7 +309,7 @@ tr:hover>td{background:#fafaf8}
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
         <button class="bp" @click="open('factura')">+ Añadir</button>
       </div>
-      <div class="card" style="overflow:hidden">
+      <div class="tbl-wrap"><div class="card" style="overflow:hidden">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th>Total (IVA inc.)</th><th></th></tr></thead>
           <tbody>
@@ -260,7 +323,7 @@ tr:hover>td{background:#fafaf8}
             </tr></template>
           </tbody>
         </table>
-      </div>
+      </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('facturas').length+' registros'"></p>
     </div>
 
@@ -271,7 +334,7 @@ tr:hover>td{background:#fafaf8}
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
         <button class="bp" @click="open('pedido_venta')">+ Añadir</button>
       </div>
-      <div class="card" style="overflow:hidden">
+      <div class="tbl-wrap"><div class="card" style="overflow:hidden">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th>Total</th><th></th></tr></thead>
           <tbody>
@@ -285,7 +348,7 @@ tr:hover>td{background:#fafaf8}
             </tr></template>
           </tbody>
         </table>
-      </div>
+      </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('pedidos_venta').length+' registros'"></p>
     </div>
 
@@ -296,7 +359,7 @@ tr:hover>td{background:#fafaf8}
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
         <button class="bp" @click="open('pedido')">+ Añadir</button>
       </div>
-      <div class="card" style="overflow:hidden">
+      <div class="tbl-wrap"><div class="card" style="overflow:hidden">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr><th>Número</th><th>Fecha</th><th>Proveedor</th><th>Estado</th><th>Total</th><th></th></tr></thead>
           <tbody>
@@ -310,7 +373,7 @@ tr:hover>td{background:#fafaf8}
             </tr></template>
           </tbody>
         </table>
-      </div>
+      </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('pedidos').length+' registros'"></p>
     </div>
 
@@ -321,7 +384,7 @@ tr:hover>td{background:#fafaf8}
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
         <button class="bp" @click="open('albaran_venta')">+ Añadir</button>
       </div>
-      <div class="card" style="overflow:hidden">
+      <div class="tbl-wrap"><div class="card" style="overflow:hidden">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th>Total</th><th></th></tr></thead>
           <tbody>
@@ -335,7 +398,7 @@ tr:hover>td{background:#fafaf8}
             </tr></template>
           </tbody>
         </table>
-      </div>
+      </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('albaranes_venta').length+' registros'"></p>
     </div>
 
@@ -346,7 +409,7 @@ tr:hover>td{background:#fafaf8}
         <input type="search" x-model="q" placeholder="Buscar..." style="width:200px">
         <button class="bp" @click="open('albaran_compra')">+ Añadir</button>
       </div>
-      <div class="card" style="overflow:hidden">
+      <div class="tbl-wrap"><div class="card" style="overflow:hidden">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr><th>Número</th><th>Fecha</th><th>Proveedor</th><th>Estado</th><th>Total</th><th></th></tr></thead>
           <tbody>
@@ -360,7 +423,7 @@ tr:hover>td{background:#fafaf8}
             </tr></template>
           </tbody>
         </table>
-      </div>
+      </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('albaranes_compra').length+' registros'"></p>
     </div>
   </div>
@@ -768,7 +831,7 @@ function app(){
       {id:'albaranes_venta',l:'Albaranes venta',s:'◧'},
       {id:'albaranes_compra',l:'Albaranes compra',s:'◨'},
     ],
-    aiOpen:false,aiMsgs:[],aiLoad:false,aiInput:'',aiHistory:[],
+    aiOpen:false,aiMsgs:[],aiLoad:false,aiInput:'',aiHistory:[],mobMenu:false,
 
     async init(){
       const {data:{session}}=await sb.auth.getSession();
