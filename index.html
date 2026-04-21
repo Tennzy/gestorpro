@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GestorPro - Palets Tarragona</title>
+<title>GestorPro - Palets S.L.</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://unpkg.com/alpinejs@3/dist/cdn.min.js" defer></script>
 <style>
@@ -113,7 +113,7 @@ tr:hover>td{background:#fafaf8}
       <div style="width:64px;height:64px;border-radius:16px;background:#185FA5;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
         <svg width="42" height="36" viewBox="0 0 42 36" fill="none"><rect x="1" y="1" width="11" height="5" rx="1" fill="white"/><rect x="15.5" y="1" width="11" height="5" rx="1" fill="white"/><rect x="30" y="1" width="11" height="5" rx="1" fill="white"/><rect x="3" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="19" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="35" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="1" y="15" width="11" height="4" rx="1" fill="white"/><rect x="15.5" y="15" width="11" height="4" rx="1" fill="white"/><rect x="30" y="15" width="11" height="4" rx="1" fill="white"/><rect x="3" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="19" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="35" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="1" y="26" width="40" height="5" rx="1" fill="white"/><rect x="1" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="15.5" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="30" y="31" width="11" height="4" rx="1" fill="#93bbdc"/></svg>
       </div>
-      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">Palets Tarragona</h2>
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">Palets S.L.</h2>
       <p style="color:#999;font-size:13px">Panel de gestión</p>
     </div>
     <div class="fld"><label>Email</label><input type="email" x-model="lemail" placeholder="tu@email.com" @keyup.enter="login()"></div>
@@ -132,7 +132,7 @@ tr:hover>td{background:#fafaf8}
   <button class="mob-menu-btn" @click="mobMenu=true">
     <span></span><span></span><span></span>
   </button>
-  <h1>Palets Tarragona</h1>
+  <h1>Palets S.L.</h1>
   <button class="mob-ai-btn" @click="aiToggle()">✦ Gestor IA</button>
 </div>
 
@@ -142,7 +142,7 @@ tr:hover>td{background:#fafaf8}
   <div class="mob-drawer-panel">
     <div style="padding:18px 16px 14px;border-bottom:1px solid #e8e8e4">
       <p style="font-weight:700;font-size:15px">GestorPro</p>
-      <p style="font-size:11px;color:#999;margin-top:2px">Palets Tarragona</p>
+      <p style="font-size:11px;color:#999;margin-top:2px">Palets S.L.</p>
     </div>
     <nav style="flex:1;padding-top:6px">
       <template x-for="n in nav" :key="n.id">
@@ -171,7 +171,7 @@ tr:hover>td{background:#fafaf8}
   <div class="desk-sidebar" style="width:215px;min-width:215px;height:100vh;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto">
     <div style="padding:18px 16px 14px;border-bottom:1px solid #e8e8e4;flex-shrink:0">
       <p style="font-weight:700;font-size:15px">GestorPro</p>
-      <p style="font-size:11px;color:#999;margin-top:2px">Palets Tarragona</p>
+      <p style="font-size:11px;color:#999;margin-top:2px">Palets S.L.</p>
     </div>
     <nav style="flex:1;padding-top:6px">
       <div class="nav-sep">General</div>
@@ -319,7 +319,7 @@ tr:hover>td{background:#fafaf8}
               <td x-text="cname(it.cliente_id)"></td>
               <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
               <td><strong x-text="fmt(tot(it.lineas)*1.21)"></strong></td>
-              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('factura',it)">Editar</button><button class="bd" @click="del('facturas',it.id)">Eliminar</button></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0" @click="pdfFactura(it)">PDF</button><button class="be" @click="open('factura',it)">Editar</button><button class="bd" @click="del('facturas',it.id)">Eliminar</button></td>
             </tr></template>
           </tbody>
         </table>
@@ -344,7 +344,7 @@ tr:hover>td{background:#fafaf8}
               <td x-text="cname(it.cliente_id)"></td>
               <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
               <td><strong x-text="fmt(tot(it.lineas))"></strong></td>
-              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('pedido_venta',it)">Editar</button><button class="bd" @click="del('pedidos_venta',it.id)">Eliminar</button></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0" @click="pdfAlbaran(it,'pedido_venta')">PDF</button><button class="be" @click="open('pedido_venta',it)">Editar</button><button class="bd" @click="del('pedidos_venta',it.id)">Eliminar</button></td>
             </tr></template>
           </tbody>
         </table>
@@ -394,7 +394,7 @@ tr:hover>td{background:#fafaf8}
               <td x-text="cname(it.cliente_id)"></td>
               <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
               <td><strong x-text="fmt(tot(it.lineas))"></strong></td>
-              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('albaran_venta',it)">Editar</button><button class="bd" @click="del('albaranes_venta',it.id)">Eliminar</button></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0" @click="pdfAlbaran(it,'albaran_venta')">PDF</button><button class="be" @click="open('albaran_venta',it)">Editar</button><button class="bd" @click="del('albaranes_venta',it.id)">Eliminar</button></td>
             </tr></template>
           </tbody>
         </table>
@@ -419,7 +419,7 @@ tr:hover>td{background:#fafaf8}
               <td x-text="pname(it.proveedor_id)"></td>
               <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
               <td><strong x-text="fmt(tot(it.lineas))"></strong></td>
-              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('albaran_compra',it)">Editar</button><button class="bd" @click="del('albaranes_compra',it.id)">Eliminar</button></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0" @click="pdfAlbaran(it,'albaran_compra')">PDF</button><button class="be" @click="open('albaran_compra',it)">Editar</button><button class="bd" @click="del('albaranes_compra',it.id)">Eliminar</button></td>
             </tr></template>
           </tbody>
         </table>
@@ -950,7 +950,7 @@ function app(){
       const tf=this.d.facturas.reduce((s,f)=>s+this.tot(f.lineas),0);
       const tc=this.d.pedidos.reduce((s,p)=>s+this.tot(p.lineas),0);
       const slim=arr=>arr.map(x=>{const{user_id,created_at,...r}=x;return r;});
-      return `Eres el Gestor IA de GestorPro para Palets Tarragona. Acceso completo a la base de datos en tiempo real (user: ${uid}).
+      return `Eres el Gestor IA de GestorPro para Palets S.L.. Acceso completo a la base de datos en tiempo real (user: ${uid}).
 
 RESUMEN: Total facturado ${this.fmt(tf)} | Total compras ${this.fmt(tc)} | Facturas pendientes ${this.d.facturas.filter(f=>f.estado==='enviada').length}
 
@@ -1032,6 +1032,111 @@ CAMPOS EXACTOS POR TABLA (usa SOLO estos, ninguno más):
     },
 
     aiScrollBottom(){const el=document.getElementById('aiMsgs');if(el)el.scrollTop=el.scrollHeight;}
+    ,pdfFactura(doc){
+      const cl=this.d.clientes.find(c=>c.id===doc.cliente_id)||{};
+      const base=this.tot(doc.lineas);
+      const iva=base*0.21;
+      const total=base+iva;
+      const fmt=n=>Number(n).toLocaleString('es-ES',{style:'currency',currency:'EUR'});
+      const rows=(doc.lineas||[]).map((l,i)=>`<tr style="background:${i%2===0?'#f9fafb':'#fff'}"><td style="padding:8px 12px;border-bottom:1px solid #eee">${l.desc}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center">${l.qty}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right">${fmt(l.precio)}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600">${fmt(l.qty*l.precio)}</td></tr>`).join('');
+      const estadoColor=doc.estado==='pagada'?{bg:'#dcfce7',c:'#166534'}:doc.estado==='enviada'?{bg:'#dbeafe',c:'#1d4ed8'}:{bg:'#fef3c7',c:'#92400e'};
+      const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Factura ${doc.numero}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;padding:40px;max-width:800px;margin:0 auto}@media print{body{padding:20px}@page{margin:15mm}}</style></head><body>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;padding-bottom:20px;border-bottom:3px solid #185FA5">
+  <div>
+    <div style="width:44px;height:44px;background:#185FA5;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px"><svg width="28" height="24" viewBox="0 0 42 36" fill="none"><rect x="1" y="1" width="11" height="5" rx="1" fill="white"/><rect x="15.5" y="1" width="11" height="5" rx="1" fill="white"/><rect x="30" y="1" width="11" height="5" rx="1" fill="white"/><rect x="3" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="19" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="35" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="1" y="15" width="11" height="4" rx="1" fill="white"/><rect x="15.5" y="15" width="11" height="4" rx="1" fill="white"/><rect x="30" y="15" width="11" height="4" rx="1" fill="white"/><rect x="3" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="19" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="35" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="1" y="26" width="40" height="5" rx="1" fill="white"/><rect x="1" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="15.5" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="30" y="31" width="11" height="4" rx="1" fill="#93bbdc"/></svg></div>
+    <div style="font-size:18px;font-weight:700;color:#185FA5">Palets S.L.</div>
+    <div style="font-size:12px;color:#666;margin-top:4px">NIF: B-12345678</div>
+    <div style="font-size:12px;color:#666">Pol. Industrial La Plana, Nave 12</div>
+    <div style="font-size:12px;color:#666">43006 Tarragona · Tel: 977 123 456</div>
+    <div style="font-size:12px;color:#666">info@paletssl.com</div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:26px;font-weight:700;color:#185FA5">FACTURA</div>
+    <div style="font-size:16px;font-weight:600;margin-top:2px">${doc.numero}</div>
+    <div style="font-size:12px;color:#666;margin-top:6px">Fecha: ${doc.fecha}</div>
+    <div style="margin-top:6px;display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${estadoColor.bg};color:${estadoColor.c}">${(doc.estado||'').toUpperCase()}</div>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
+  <div style="background:#f8fafc;border-radius:8px;padding:14px">
+    <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Emisor</div>
+    <div style="font-weight:600">Palets S.L.</div>
+    <div style="font-size:12px;color:#555">NIF: B-12345678</div>
+    <div style="font-size:12px;color:#555">Pol. Industrial La Plana, Nave 12, 43006 Tarragona</div>
+  </div>
+  <div style="background:#f8fafc;border-radius:8px;padding:14px">
+    <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Facturar a</div>
+    <div style="font-weight:600">${cl.nombre||'—'}</div>
+    ${cl.nif?`<div style="font-size:12px;color:#555">NIF: ${cl.nif}</div>`:''}
+    ${cl.direccion_facturacion?`<div style="font-size:12px;color:#555">${cl.direccion_facturacion}</div>`:cl.ciudad?`<div style="font-size:12px;color:#555">${cl.ciudad}</div>`:''}
+    ${cl.email?`<div style="font-size:12px;color:#555">${cl.email}</div>`:''}
+  </div>
+</div>
+<table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+  <thead><tr style="background:#185FA5;color:#fff"><th style="padding:9px 12px;text-align:left;font-size:11px">DESCRIPCIÓN</th><th style="padding:9px 12px;text-align:center;font-size:11px;width:70px">CANT.</th><th style="padding:9px 12px;text-align:right;font-size:11px;width:100px">PRECIO</th><th style="padding:9px 12px;text-align:right;font-size:11px;width:100px">TOTAL</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<div style="display:flex;justify-content:flex-end;margin-bottom:32px">
+  <div style="width:260px">
+    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#666">Base imponible</span><span>${fmt(base)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#666">IVA (21%)</span><span>${fmt(iva)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:16px;font-weight:700;color:#185FA5"><span>TOTAL</span><span>${fmt(total)}</span></div>
+  </div>
+</div>
+${doc.notas?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 12px;margin-bottom:24px;font-size:12px;color:#555"><strong>Notas:</strong> ${doc.notas}</div>`:''}
+<div style="border-top:1px solid #e5e7eb;padding-top:14px;display:flex;justify-content:space-between;font-size:10px;color:#aaa"><span>Palets S.L. · NIF B-12345678 · info@paletssl.com</span><span>Generado el ${new Date().toLocaleDateString('es-ES')}</span></div>
+<script>window.onload=function(){window.print()}<\/script></body></html>`;
+      const w=window.open('','_blank');if(w){w.document.write(html);w.document.close();}
+    },
+
+    pdfAlbaran(doc,tipo){
+      const esVenta=['albaran_venta','pedido_venta'].includes(tipo);
+      const esAlbaran=tipo.startsWith('albaran');
+      const contacto=esVenta?(this.d.clientes.find(c=>c.id===doc.cliente_id)||{}):(this.d.proveedores.find(p=>p.id===doc.proveedor_id)||{});
+      const total=this.tot(doc.lineas);
+      const fmt=n=>Number(n).toLocaleString('es-ES',{style:'currency',currency:'EUR'});
+      const tipoLabel=esAlbaran?(esVenta?'ALBARÁN DE ENTREGA':'ALBARÁN DE RECEPCIÓN'):(esVenta?'PEDIDO DE VENTA':'PEDIDO DE COMPRA');
+      const rows=(doc.lineas||[]).map((l,i)=>`<tr style="background:${i%2===0?'#f9fafb':'#fff'}"><td style="padding:9px 12px;border-bottom:1px solid #eee">${l.desc}</td><td style="padding:9px 12px;border-bottom:1px solid #eee;text-align:center;font-weight:600">${l.qty}</td><td style="padding:9px 12px;border-bottom:1px solid #eee;text-align:right">${fmt(l.precio)}</td><td style="padding:9px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600">${fmt(l.qty*l.precio)}</td></tr>`).join('');
+      const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${tipoLabel} ${doc.numero}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;padding:40px;max-width:800px;margin:0 auto}@media print{body{padding:20px}@page{margin:15mm}}</style></head><body>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;padding-bottom:16px;border-bottom:2px solid #e5e7eb">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="width:40px;height:40px;background:#185FA5;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="26" height="22" viewBox="0 0 42 36" fill="none"><rect x="1" y="1" width="11" height="5" rx="1" fill="white"/><rect x="15.5" y="1" width="11" height="5" rx="1" fill="white"/><rect x="30" y="1" width="11" height="5" rx="1" fill="white"/><rect x="3" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="19" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="35" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="1" y="15" width="11" height="4" rx="1" fill="white"/><rect x="15.5" y="15" width="11" height="4" rx="1" fill="white"/><rect x="30" y="15" width="11" height="4" rx="1" fill="white"/><rect x="3" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="19" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="35" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="1" y="26" width="40" height="5" rx="1" fill="white"/><rect x="1" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="15.5" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="30" y="31" width="11" height="4" rx="1" fill="#93bbdc"/></svg></div>
+    <div><div style="font-size:15px;font-weight:700">Palets S.L.</div><div style="font-size:11px;color:#888">NIF: B-12345678 · Tel: 977 123 456</div></div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:11px;font-weight:700;color:#185FA5;letter-spacing:.06em">${tipoLabel}</div>
+    <div style="font-size:20px;font-weight:700;margin-top:2px">${doc.numero}</div>
+    <div style="font-size:12px;color:#666;margin-top:2px">Fecha: ${doc.fecha}</div>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+  <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px">
+    <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:5px">Emisor</div>
+    <div style="font-weight:600;font-size:13px">Palets S.L.</div>
+    <div style="font-size:12px;color:#555">Pol. Industrial La Plana, Nave 12</div>
+    <div style="font-size:12px;color:#555">43006 Tarragona</div>
+  </div>
+  <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px">
+    <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:5px">${esVenta?'Cliente':'Proveedor'}</div>
+    <div style="font-weight:600;font-size:13px">${contacto.nombre||'—'}</div>
+    ${contacto.nif?`<div style="font-size:12px;color:#555">NIF: ${contacto.nif}</div>`:''}
+    ${contacto.ciudad?`<div style="font-size:12px;color:#555">${contacto.ciudad}</div>`:''}
+    ${contacto.telefono?`<div style="font-size:12px;color:#555">Tel: ${contacto.telefono}</div>`:''}
+  </div>
+</div>
+<table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+  <thead><tr style="background:#1e293b;color:#fff"><th style="padding:9px 12px;text-align:left;font-size:11px">DESCRIPCIÓN</th><th style="padding:9px 12px;text-align:center;font-size:11px;width:70px">UDS.</th><th style="padding:9px 12px;text-align:right;font-size:11px;width:100px">PRECIO</th><th style="padding:9px 12px;text-align:right;font-size:11px;width:100px">IMPORTE</th></tr></thead>
+  <tbody>${rows}</tbody>
+  <tfoot><tr style="background:#f1f5f9"><td colspan="3" style="padding:9px 12px;font-weight:700;text-align:right;font-size:12px">TOTAL</td><td style="padding:9px 12px;font-weight:700;text-align:right;font-size:14px;color:#185FA5">${fmt(total)}</td></tr></tfoot>
+</table>
+${doc.notas?`<div style="background:#f8fafc;border-radius:6px;padding:9px 12px;margin-bottom:20px;font-size:12px;color:#555"><strong>Observaciones:</strong> ${doc.notas}</div>`:''}
+${esAlbaran?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:36px;padding-top:20px;border-top:1px solid #e5e7eb"><div style="text-align:center"><div style="font-size:11px;color:#888;margin-bottom:44px">Firma y sello emisor</div><div style="border-top:1px solid #aaa;padding-top:5px;font-size:11px;color:#888">Palets S.L.</div></div><div style="text-align:center"><div style="font-size:11px;color:#888;margin-bottom:44px">Firma y sello receptor</div><div style="border-top:1px solid #aaa;padding-top:5px;font-size:11px;color:#888">${contacto.nombre||''}</div></div></div>`:''}
+<div style="margin-top:28px;border-top:1px solid #e5e7eb;padding-top:12px;display:flex;justify-content:space-between;font-size:10px;color:#aaa"><span>Palets S.L. · NIF B-12345678 · Pol. Ind. La Plana Nave 12, 43006 Tarragona</span><span>${new Date().toLocaleDateString('es-ES')}</span></div>
+<script>window.onload=function(){window.print()}<\/script></body></html>`;
+      const w=window.open('','_blank');if(w){w.document.write(html);w.document.close();}
+    }
   };
 }
 </script>
