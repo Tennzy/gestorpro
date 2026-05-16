@@ -4,8 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GestorPro - Palets S.L.</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://unpkg.com/alpinejs@3/dist/cdn.min.js" defer></script>
+<!-- Vendor offline (funciona en .exe sin internet y también en la web GitHub Pages) -->
+<script src="vendor/supabase.min.js"></script>
+<script src="vendor/papaparse.min.js"></script>
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/alpine.min.js" defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a1a}
@@ -551,6 +554,96 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
         </table>
       </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('albaranes_compra').length+' registros'"></p>
+    </div>
+
+    <!-- IMPORTAR DATOS · cargar histórico desde Excel/CSV (admin) -->
+    <div x-show="sec==='importar' && isAdmin">
+      <div class="sec-head" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Importar datos</h2>
+      </div>
+      <p style="color:#666;margin-bottom:18px;font-size:13px;max-width:680px">
+        Sube tu histórico de clientes, proveedores, productos o facturas. Soporta <strong>CSV y Excel (.xlsx)</strong>.
+        La app detecta automáticamente el tipo de datos y mapea las columnas. Antes de confirmar verás una previsualización.
+      </p>
+
+      <div class="card" style="padding:20px;margin-bottom:14px">
+        <label style="display:block;margin-bottom:10px;font-size:13px;font-weight:600">1. Selecciona el archivo</label>
+        <input type="file" accept=".csv,.xlsx,.xls,.txt" @change="impSelectFile($event)" style="font-size:13px">
+        <p x-show="imp.fileName" style="margin-top:8px;font-size:12px;color:#666">Archivo: <strong x-text="imp.fileName"></strong> · <span x-text="imp.sheets.length?imp.sheets[0].rows.length+' filas':'(vacío)'"></span></p>
+      </div>
+
+      <div x-show="imp.preview.length" class="card" style="padding:20px;margin-bottom:14px">
+        <label style="display:block;margin-bottom:10px;font-size:13px;font-weight:600">2. Tipo detectado</label>
+        <select x-model="imp.detected" @change="imp.mapping=autoMapColumns(imp.sheets[0].rows[0]||{},imp.detected)" style="font-size:13px;margin-bottom:14px">
+          <option value="">— Selecciona —</option>
+          <option value="clientes">Clientes</option>
+          <option value="proveedores">Proveedores</option>
+          <option value="productos">Productos</option>
+          <option value="facturas">Facturas de venta</option>
+          <option value="pedidos_venta">Pedidos de venta</option>
+          <option value="pedidos">Pedidos de compra</option>
+          <option value="albaranes_venta">Albaranes de venta</option>
+          <option value="albaranes_compra">Albaranes de compra</option>
+        </select>
+
+        <label style="display:block;margin-bottom:10px;font-size:13px;font-weight:600">3. Mapeo de columnas (auto detectado · ajusta si quieres)</label>
+        <div style="overflow-x:auto;font-size:12px;background:#fafaf8;border-radius:6px;padding:10px">
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr><th style="text-align:left;padding:4px 8px;border-bottom:1px solid #eee">Campo en GestorPro</th><th style="text-align:left;padding:4px 8px;border-bottom:1px solid #eee">Columna del archivo</th></tr></thead>
+            <tbody>
+              <template x-for="[campo,col] in Object.entries(imp.mapping)" :key="campo">
+                <tr><td style="padding:5px 8px;border-bottom:1px dashed #eee;font-family:monospace" x-text="campo"></td><td style="padding:5px 8px;border-bottom:1px dashed #eee" x-text="col"></td></tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="margin-top:14px;font-size:13px;font-weight:600;margin-bottom:6px">4. Previsualización (primeras 5 filas)</p>
+        <div style="overflow-x:auto;font-size:11px;background:#fafaf8;border-radius:6px;padding:10px;max-height:200px;overflow-y:auto">
+          <table style="width:100%;border-collapse:collapse;font-family:monospace">
+            <thead><tr>
+              <template x-for="c in Object.keys(imp.preview[0]||{})" :key="c"><th style="text-align:left;padding:3px 6px;border-bottom:1px solid #ddd;white-space:nowrap" x-text="c"></th></template>
+            </tr></thead>
+            <tbody>
+              <template x-for="(r,i) in imp.preview" :key="i"><tr>
+                <template x-for="c in Object.keys(imp.preview[0]||{})" :key="c"><td style="padding:3px 6px;border-bottom:1px dashed #eee;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis" x-text="String(r[c]||'').slice(0,60)"></td></template>
+              </tr></template>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+          <button class="bs" @click="resetImport()">Cancelar</button>
+          <button class="bp" @click="impEjecutar()" :disabled="imp.busy||!imp.detected">
+            <span x-text="imp.busy?'Importando…':'5. Importar '+imp.sheets[0].rows.length+' registros'"></span>
+          </button>
+        </div>
+      </div>
+
+      <div x-show="imp.stats" class="card" style="padding:16px;margin-bottom:14px;border-left:4px solid #16a34a">
+        <p style="font-size:14px"><strong x-text="'✓ '+imp.stats.ok+' importados correctamente'"></strong> de <span x-text="imp.stats.total"></span> totales</p>
+        <p x-show="imp.stats.err" style="font-size:13px;color:#dc2626;margin-top:4px" x-text="imp.stats.err+' filas con errores (ver detalle abajo)'"></p>
+      </div>
+
+      <div x-show="imp.errors.length" class="card" style="padding:16px;margin-bottom:14px;border-left:4px solid #dc2626">
+        <p style="font-size:13px;font-weight:600;margin-bottom:8px">Errores en la importación:</p>
+        <ul style="font-size:12px;color:#555;font-family:monospace;list-style:none;max-height:200px;overflow-y:auto">
+          <template x-for="(e,i) in imp.errors" :key="i"><li style="padding:3px 0;border-bottom:1px dashed #eee" x-text="(i+1)+'. '+e.error"></li></template>
+        </ul>
+      </div>
+
+      <div style="margin-top:24px;padding:16px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px">
+        <p style="font-size:13px;font-weight:600;margin-bottom:10px">📥 Plantillas CSV de ejemplo</p>
+        <p style="font-size:12px;color:#666;margin-bottom:10px">Si vas a meter datos a mano, descarga estas plantillas, ábrelas con Excel, rellénalas y vuelve aquí para subirlas:</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="be" @click="descargarPlantilla('clientes')">📄 Plantilla Clientes</button>
+          <button class="be" @click="descargarPlantilla('proveedores')">📄 Plantilla Proveedores</button>
+          <button class="be" @click="descargarPlantilla('productos')">📄 Plantilla Productos</button>
+          <button class="be" @click="descargarPlantilla('facturas')">📄 Plantilla Facturas</button>
+          <button class="be" @click="descargarPlantilla('pedidos_venta')">📄 Plantilla Pedidos</button>
+        </div>
+        <p style="font-size:11px;color:#888;margin-top:10px">💡 <strong>Truco:</strong> para facturas, primero importa clientes (la app las cruza por nombre). Para productos no hace falta orden previo.</p>
+      </div>
     </div>
 
     <!-- USUARIOS · gestión multi-usuario (admin only, solo Electron) -->
@@ -1283,6 +1376,7 @@ function app(){
       {id:'empresa',l:'Mi empresa',s:'⚙'},
     ],
     navAdmin:[
+      {id:'importar',l:'Importar datos',s:'↑'},
       {id:'usuarios',l:'Usuarios',s:'☻'},
       {id:'sql',l:'Base de datos',s:'⌘'},
     ],
@@ -1740,6 +1834,147 @@ CAMPOS EXACTOS POR TABLA (usa SOLO estos, ninguno más):
         not_authenticated:'Sesión expirada.',
       };
       return map[code]||code;
+    },
+
+    // ============ IMPORTADOR MASIVO (Excel/CSV) ============
+    imp:{file:null,fileName:'',sheets:[],preview:[],detected:'',mapping:{},stats:null,busy:false,errors:[]},
+
+    resetImport(){this.imp={file:null,fileName:'',sheets:[],preview:[],detected:'',mapping:{},stats:null,busy:false,errors:[]};},
+
+    async impSelectFile(ev){
+      const file=ev.target.files[0]; if(!file)return;
+      this.imp.fileName=file.name; this.imp.busy=true; this.imp.preview=[]; this.imp.errors=[]; this.imp.stats=null;
+      const ext=file.name.split('.').pop().toLowerCase();
+      try{
+        if(ext==='csv'||ext==='txt'){
+          const text=await file.text();
+          const parsed=Papa.parse(text,{header:true,skipEmptyLines:true,dynamicTyping:false});
+          this.imp.sheets=[{name:'CSV',rows:parsed.data}];
+        }else if(ext==='xlsx'||ext==='xls'){
+          const buf=await file.arrayBuffer();
+          const wb=XLSX.read(buf,{type:'array',cellDates:true});
+          this.imp.sheets=wb.SheetNames.map(name=>({name,rows:XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:'',raw:false})}));
+        }else{ this.err('Formato no soportado. Usa CSV o Excel (.xlsx).');this.imp.busy=false;return; }
+        // Auto-seleccionar primera hoja con datos
+        const first=this.imp.sheets.find(s=>s.rows.length>0);
+        if(first){ this.imp.preview=first.rows.slice(0,5); this.imp.detected=this.detectTipoImport(first.rows); this.imp.mapping=this.autoMapColumns(first.rows[0]||{},this.imp.detected); }
+      }catch(e){ this.err('Error al leer: '+e.message); }
+      this.imp.busy=false;
+    },
+
+    // Heurística: detectar qué entidad parecen ser estos datos
+    detectTipoImport(rows){
+      if(!rows||!rows.length)return '';
+      const cols=Object.keys(rows[0]).map(c=>c.toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g,''));
+      const has=keys=>keys.some(k=>cols.some(c=>c===k||c.includes(k)));
+      if(has(['precio venta','precio_venta','pventa','pvp','stock'])) return 'productos';
+      if(has(['numero','nº','num','no.','n.','n.factura','factura'])&&has(['cliente','customer'])) return 'facturas';
+      if(has(['numero','nº','num'])&&has(['cliente'])&&has(['albaran','albarán','entrega'])) return 'albaranes_venta';
+      if(has(['numero','nº','num'])&&has(['proveedor','supplier'])&&has(['albaran','albarán','recepcion'])) return 'albaranes_compra';
+      if(has(['numero','nº'])&&has(['cliente'])) return 'pedidos_venta';
+      if(has(['numero','nº'])&&has(['proveedor'])) return 'pedidos';
+      if(has(['proveedor','supplier']))return 'proveedores';
+      // Por defecto: si tiene "nif"/"email" → clientes
+      if(has(['nif','cif','dni','email','correo'])) return 'clientes';
+      return '';
+    },
+
+    // Mapeo automático de columnas del archivo a campos de la tabla
+    autoMapColumns(row,tipo){
+      if(!row)return {};
+      const aliases={
+        nombre:['nombre','razon social','razón social','empresa','cliente','proveedor','name','denominacion','denominación'],
+        nif:['nif','cif','dni','documento','tax id','vat'],
+        email:['email','correo','e-mail','mail','correo electronico','correo electrónico'],
+        telefono:['telefono','teléfono','tel','phone','movil','móvil','telf'],
+        ciudad:['ciudad','localidad','poblacion','población','city'],
+        direccion_envio:['direccion','dirección','dir','direccion envio','dirección envío','address','calle','domicilio'],
+        direccion_facturacion:['direccion facturacion','dirección facturación','dir facturacion','fiscal','billing'],
+        notas:['notas','observaciones','comentarios','notes','obs'],
+        // productos
+        categoria:['categoria','categoría','category','familia','tipo'],
+        precio_venta:['precio venta','precio_venta','pvp','pventa','price','venta','tarifa'],
+        precio_compra:['precio compra','precio_compra','pcompra','coste','cost'],
+        stock:['stock','existencias','cantidad','unidades','inventory'],
+        unidad:['unidad','uds','unit','medida'],
+        // documentos
+        numero:['numero','número','num','n','no','nº','n. factura','n. albaran','referencia','ref'],
+        fecha:['fecha','date','f. emision','f. emisión','fecha factura'],
+        estado:['estado','status','situacion','situación'],
+        cliente:['cliente','customer','client'],
+        proveedor:['proveedor','supplier','vendor'],
+      };
+      const cols=Object.keys(row);
+      const map={};
+      const norm=s=>String(s||'').toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      for(const [field,aliasList] of Object.entries(aliases)){
+        const found=cols.find(c=>{ const n=norm(c); return aliasList.some(a=>n===a||n.includes(a)); });
+        if(found) map[field]=found;
+      }
+      return map;
+    },
+
+    async impEjecutar(){
+      if(!this.imp.sheets.length || !this.imp.detected){this.err('Selecciona un archivo y verifica que se detectó el tipo.');return;}
+      this.imp.busy=true; this.imp.errors=[]; const tipo=this.imp.detected; const map=this.imp.mapping;
+      const rows=this.imp.sheets[0].rows;
+      let ok=0,err=0;
+      const errs=[];
+      const tx=async(arr)=>{
+        for(const row of arr){
+          try{
+            const d={};
+            for(const [campo,colName] of Object.entries(map)){
+              let v=row[colName];
+              if(v===undefined||v===null||v==='')continue;
+              if(['precio_venta','precio_compra','stock'].includes(campo)) v=Number(String(v).replace(',','.'))||0;
+              if(campo==='fecha'){
+                if(v instanceof Date) v=v.toISOString().slice(0,10);
+                else if(typeof v==='string'){ const m=v.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/); if(m){let[,d1,m1,y]=m;if(y.length===2)y='20'+y;v=`${y.padStart(4,'0')}-${m1.padStart(2,'0')}-${d1.padStart(2,'0')}`;} }
+              }
+              d[campo]=v;
+            }
+            if(!d.nombre&&!d.numero){err++;continue;}
+            // Para facturas/pedidos/albaranes: resolver cliente/proveedor por nombre o nif
+            if(['facturas','pedidos_venta','albaranes_venta'].includes(tipo)&&d.cliente){
+              const c=this.d.clientes.find(c=>c.nombre&&c.nombre.toLowerCase()===String(d.cliente).toLowerCase().trim());
+              if(c){ d.cliente_id=c.id; } else { errs.push({row,error:`Cliente no encontrado: ${d.cliente}`}); }
+              delete d.cliente;
+            }
+            if(['pedidos','albaranes_compra'].includes(tipo)&&d.proveedor){
+              const p=this.d.proveedores.find(p=>p.nombre&&p.nombre.toLowerCase()===String(d.proveedor).toLowerCase().trim());
+              if(p){ d.proveedor_id=p.id; } else { errs.push({row,error:`Proveedor no encontrado: ${d.proveedor}`}); }
+              delete d.proveedor;
+            }
+            if(IS_ELECTRON===false) d.user_id=this.session.user.id;
+            const r=await sb.from(tipo).insert(d);
+            if(r.error){err++;errs.push({row,error:r.error.message});} else ok++;
+          }catch(e){err++;errs.push({row,error:e.message});}
+        }
+      };
+      await tx(rows);
+      this.imp.stats={ok,err,total:rows.length};
+      this.imp.errors=errs.slice(0,20);
+      await this.reload(tipo);
+      this.imp.busy=false;
+      if(err===0) this.ok(`✓ ${ok} registros importados sin errores.`);
+      else this.err(`Importados ${ok} · ${err} errores (mira el detalle abajo).`);
+    },
+
+    // Plantilla CSV descargable
+    descargarPlantilla(tipo){
+      const templates={
+        clientes:'nombre,nif,email,telefono,ciudad,direccion_envio,direccion_facturacion\nDistribuciones Ejemplo SL,B12345674,contacto@ejemplo.es,977123456,Tarragona,"Calle Mayor 1, 43001 Tarragona","Mismo que envío"',
+        proveedores:'nombre,nif,email,telefono,ciudad,direccion_envio,direccion_facturacion\nMaderas Ejemplo SA,A87654328,info@maderas.es,977654321,Reus,"Pol. Ind. La Plana 5",""',
+        productos:'nombre,categoria,precio_venta,precio_compra,stock,unidad\nPalet Europeo Estándar 1200x800,Palets,18.5,12,150,ud\nPalet Americano 1200x1000,Palets,22,14,80,ud',
+        facturas:'numero,fecha,cliente,estado,notas\nF-2025-0001,2025-01-15,Distribuciones Ejemplo SL,enviada,Primera factura del año',
+        pedidos_venta:'numero,fecha,cliente,estado,notas\nPV-2025-0001,2025-01-10,Distribuciones Ejemplo SL,confirmado,',
+      };
+      const csv=templates[tipo]||templates.clientes;
+      const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=`plantilla-${tipo}.csv`;a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
     },
 
     // ============ SQL STUDIO (admin only, solo Electron) ============
