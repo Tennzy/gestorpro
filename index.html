@@ -211,7 +211,7 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
       <div style="width:64px;height:64px;border-radius:16px;background:#185FA5;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
         <svg width="42" height="36" viewBox="0 0 42 36" fill="none"><rect x="1" y="1" width="11" height="5" rx="1" fill="white"/><rect x="15.5" y="1" width="11" height="5" rx="1" fill="white"/><rect x="30" y="1" width="11" height="5" rx="1" fill="white"/><rect x="3" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="19" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="35" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="1" y="15" width="11" height="4" rx="1" fill="white"/><rect x="15.5" y="15" width="11" height="4" rx="1" fill="white"/><rect x="30" y="15" width="11" height="4" rx="1" fill="white"/><rect x="3" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="19" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="35" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="1" y="26" width="40" height="5" rx="1" fill="white"/><rect x="1" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="15.5" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="30" y="31" width="11" height="4" rx="1" fill="#93bbdc"/></svg>
       </div>
-      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">Palets S.L.</h2>
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">GestorPro</h2>
       <p style="color:#999;font-size:13px">Panel de gestión</p>
     </div>
     <div class="fld"><label>Email</label><input type="email" x-model="lemail" placeholder="tu@email.com" @keyup.enter="login()"></div>
@@ -241,7 +241,7 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
   <div class="mob-drawer-panel">
     <div style="padding:18px 16px 14px;border-bottom:1px solid #e8e8e4">
       <p style="font-weight:700;font-size:15px">GestorPro</p>
-      <p style="font-size:11px;color:#999;margin-top:2px">Palets S.L.</p>
+      <p style="font-size:11px;color:#999;margin-top:2px" x-text="(empresa&&(empresa.nombre_comercial||empresa.razon_social))||'Sin configurar'"></p>
     </div>
     <nav style="flex:1;padding-top:6px">
       <template x-for="n in nav" :key="n.id">
@@ -271,7 +271,7 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
   <div class="desk-sidebar" style="width:215px;min-width:215px;height:100vh;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto">
     <div style="padding:18px 16px 14px;border-bottom:1px solid #e8e8e4;flex-shrink:0">
       <p style="font-weight:700;font-size:15px">GestorPro</p>
-      <p style="font-size:11px;color:#999;margin-top:2px">Palets S.L.</p>
+      <p style="font-size:11px;color:#999;margin-top:2px" x-text="(empresa&&(empresa.nombre_comercial||empresa.razon_social))||'Sin configurar'"></p>
     </div>
     <nav style="flex:1;padding-top:6px">
       <div class="nav-sep">General</div>
@@ -526,6 +526,47 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
         </table>
       </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('albaranes_compra').length+' registros'"></p>
+    </div>
+
+    <!-- EMPRESA · datos legales para facturas/albaranes -->
+    <div x-show="sec==='empresa'">
+      <div class="sec-head" style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Mi empresa</h2><div style="flex:1"></div>
+        <button class="bp" @click="open('empresa')" x-text="empresa?'Editar datos':'Configurar empresa'"></button>
+      </div>
+      <p style="color:#666;margin-bottom:18px;font-size:13px;max-width:580px">Estos datos aparecerán en todas tus facturas, albaranes y pedidos. Configúralos una sola vez. Se almacenan de forma privada (solo tú puedes verlos).</p>
+
+      <template x-if="!empresa">
+        <div class="card" style="padding:24px;text-align:center;border:1px dashed #d4d4d0">
+          <p style="font-size:14px;color:#666;margin-bottom:14px">Aún no has configurado los datos de tu empresa.<br>Hazlo ahora para que tus facturas tengan toda la información legal.</p>
+          <button class="bp" @click="open('empresa')">Configurar empresa ahora</button>
+        </div>
+      </template>
+
+      <template x-if="empresa">
+        <div class="card" style="padding:24px">
+          <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+            <div x-show="empresa.logo_data" style="flex-shrink:0">
+              <img :src="empresa.logo_data" style="max-width:120px;max-height:80px;border:1px solid #eee;border-radius:6px;padding:6px;background:#fff">
+            </div>
+            <div style="flex:1;min-width:240px">
+              <h3 style="font-size:17px;font-weight:700;margin-bottom:2px" x-text="empresa.nombre_comercial||empresa.razon_social"></h3>
+              <p style="font-size:12px;color:#888;margin-bottom:10px" x-text="empresa.razon_social&&empresa.nombre_comercial&&empresa.razon_social!==empresa.nombre_comercial?empresa.razon_social:''"></p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 18px;font-size:13px;color:#444">
+                <p x-show="empresa.nif"><strong>NIF:</strong> <span x-text="empresa.nif"></span></p>
+                <p x-show="empresa.telefono"><strong>Tel:</strong> <span x-text="empresa.telefono"></span></p>
+                <p x-show="empresa.email"><strong>Email:</strong> <span x-text="empresa.email"></span></p>
+                <p x-show="empresa.web"><strong>Web:</strong> <span x-text="empresa.web"></span></p>
+                <p x-show="empresa.direccion" style="grid-column:1/-1"><strong>Dirección:</strong> <span x-text="(empresa.direccion||'')+(empresa.cp?', '+empresa.cp:'')+(empresa.ciudad?' '+empresa.ciudad:'')+(empresa.provincia?' ('+empresa.provincia+')':'')"></span></p>
+                <p x-show="empresa.iban" style="grid-column:1/-1"><strong>IBAN:</strong> <span x-text="empresa.iban"></span></p>
+                <p><strong>IVA por defecto:</strong> <span x-text="empresa.iva_default+'%'"></span></p>
+                <p><strong>Color marca:</strong> <span :style="`display:inline-block;width:14px;height:14px;border-radius:3px;background:${empresa.color_primario};border:1px solid #ccc;vertical-align:middle`"></span> <span x-text="empresa.color_primario"></span></p>
+              </div>
+              <p x-show="empresa.notas_factura" style="margin-top:14px;padding-top:14px;border-top:1px solid #eee;font-size:12px;color:#666;line-height:1.5"><strong>Pie de factura:</strong><br><span x-text="empresa.notas_factura"></span></p>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </div>
@@ -904,6 +945,72 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
   </div>
 </div>
 
+<!-- MODAL EMPRESA · datos legales que aparecen en facturas, albaranes y pedidos -->
+<div class="ov" x-show="modal==='empresa'" @click.self="modal=null">
+  <div class="mb" style="max-width:680px">
+    <div class="mh">
+      <h3 style="margin:0;font-size:15px;font-weight:600">Datos de mi empresa</h3>
+      <div style="flex:1"></div><button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+    </div>
+    <div style="padding:20px">
+      <p style="font-size:12px;color:#666;margin-bottom:14px;line-height:1.5">Esta información aparecerá automáticamente en todas las facturas, albaranes y pedidos que generes.</p>
+
+      <p style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Identificación</p>
+      <div class="g2">
+        <div class="fld"><label>Razón social *</label><input type="text" x-model="f.razon_social" placeholder="Ej: Palets S.L."></div>
+        <div class="fld"><label>Nombre comercial</label><input type="text" x-model="f.nombre_comercial" placeholder="Si es distinto a la razón social"></div>
+        <div class="fld"><label>NIF/CIF</label><input type="text" x-model="f.nif" placeholder="B12345678" @blur="if(f.nif&&!validateNIF(f.nif))err('NIF inválido')"></div>
+        <div class="fld"><label>IBAN (para cobros)</label><input type="text" x-model="f.iban" placeholder="ES00 0000 0000 0000 0000 0000"></div>
+      </div>
+
+      <p style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Dirección fiscal</p>
+      <div class="fld"><label>Dirección</label><input type="text" x-model="f.direccion" placeholder="Calle, número, polígono, nave..."></div>
+      <div class="g2">
+        <div class="fld"><label>Código postal</label><input type="text" x-model="f.cp" placeholder="43006"></div>
+        <div class="fld"><label>Ciudad</label><input type="text" x-model="f.ciudad" placeholder="Tarragona"></div>
+        <div class="fld"><label>Provincia</label><input type="text" x-model="f.provincia" placeholder="Tarragona"></div>
+        <div class="fld"><label>País</label><input type="text" x-model="f.pais" placeholder="España"></div>
+      </div>
+
+      <p style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Contacto</p>
+      <div class="g2">
+        <div class="fld"><label>Teléfono</label><input type="text" x-model="f.telefono" placeholder="977 123 456"></div>
+        <div class="fld"><label>Email</label><input type="email" x-model="f.email" placeholder="info@empresa.es"></div>
+      </div>
+      <div class="fld"><label>Web</label><input type="text" x-model="f.web" placeholder="https://miempresa.es"></div>
+
+      <p style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Logo</p>
+      <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+        <template x-if="f.logo_data">
+          <div style="position:relative">
+            <img :src="f.logo_data" style="max-width:120px;max-height:80px;border:1px solid #eee;border-radius:6px;padding:6px;background:#fff">
+            <button class="bd" style="position:absolute;top:-6px;right:-6px;padding:2px 6px;font-size:10px;border-radius:50%" @click="quitarLogo()" title="Quitar logo">✕</button>
+          </div>
+        </template>
+        <div style="flex:1;min-width:200px">
+          <label class="bs" style="display:inline-block;cursor:pointer">
+            <span x-text="f.logo_data?'Cambiar logo':'Subir logo'"></span>
+            <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" @change="onLogoFile($event)" style="display:none">
+          </label>
+          <p style="font-size:11px;color:#888;margin-top:5px">PNG, JPG o SVG · máx 500 KB · idealmente fondo transparente</p>
+        </div>
+      </div>
+
+      <p style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Personalización</p>
+      <div class="g2">
+        <div class="fld"><label>IVA por defecto (%)</label><input type="number" min="0" max="100" step="0.5" x-model="f.iva_default"></div>
+        <div class="fld"><label>Color principal</label><input type="color" x-model="f.color_primario" style="height:38px"></div>
+      </div>
+      <div class="fld"><label>Pie de factura (condiciones, forma de pago...)</label><textarea x-model="f.notas_factura" placeholder="Ej: Forma de pago: transferencia a 30 días fecha factura. Mercancía no admite devolución pasados 7 días." style="resize:vertical;height:60px"></textarea></div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid #eee">
+        <button class="bs" @click="modal=null">Cancelar</button>
+        <button class="bp" @click="saveEmpresa()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CAMBIAR CONTRASEÑA -->
 <div class="ov" x-show="modal==='cambiarPass'" @click.self="modal=null">
   <div class="mb" style="max-width:380px">
@@ -924,6 +1031,12 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
 </div>
 
 <div x-show="serr" style="position:fixed;bottom:24px;right:24px;background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:10px;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:2000" x-text="serr"></div>
+<div x-show="sok" x-transition.opacity style="position:fixed;bottom:24px;right:24px;background:#dcfce7;color:#166534;padding:12px 18px;border-radius:10px;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:2000" x-text="sok"></div>
+<!-- Banner global: aviso si la empresa no está configurada -->
+<div x-show="session && !empresa && sec!=='empresa'" x-transition style="position:fixed;top:0;left:0;right:0;background:#fef3c7;border-bottom:1px solid #fde68a;padding:9px 16px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:13px;color:#92400e;z-index:1500">
+  <span>⚠ Aún no has configurado los datos de tu empresa — las facturas saldrán incompletas.</span>
+  <button class="bp" style="padding:5px 14px;font-size:12px" @click="sec='empresa';open('empresa')">Configurar ahora</button>
+</div>
 
 </div>
 <script>
@@ -938,8 +1051,9 @@ function app(){
     lemail:'',lpass:'',lerr:'',lloading:false,
     sec:'dashboard',q:'',
     d:{clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[],pedidos_venta:[],albaranes_venta:[],albaranes_compra:[]},
+    empresa:null,  // datos legales de la empresa (logo, NIF, dirección…) — se carga al login
     modal:null,f:{},nl:{desc:'',qty:1,precio:''},
-    serr:'',
+    serr:'',sok:'',
     nav:[
       {id:'dashboard',l:'Dashboard',s:'◉'},
       {id:'clientes',l:'Clientes',s:'◎'},
@@ -950,6 +1064,7 @@ function app(){
       {id:'pedidos',l:'Pedidos compra',s:'⊕'},
       {id:'albaranes_venta',l:'Albaranes venta',s:'◧'},
       {id:'albaranes_compra',l:'Albaranes compra',s:'◨'},
+      {id:'empresa',l:'Mi empresa',s:'⚙'},
     ],
     aiOpen:false,aiMsgs:[],aiLoad:false,aiInput:'',aiHistory:[],mobMenu:false,
 
@@ -963,7 +1078,7 @@ function app(){
     async load(){
       this.dataLoad=true;
       try{
-        const [a,b,c,e,f,g,h,k]=await Promise.all([
+        const [a,b,c,e,f,g,h,k,emp]=await Promise.all([
           sb.from('clientes').select('*').order('nombre'),
           sb.from('proveedores').select('*').order('nombre'),
           sb.from('productos').select('*').order('nombre'),
@@ -972,14 +1087,49 @@ function app(){
           sb.from('pedidos_venta').select('*').order('created_at',{ascending:false}),
           sb.from('albaranes_venta').select('*').order('created_at',{ascending:false}),
           sb.from('albaranes_compra').select('*').order('created_at',{ascending:false}),
+          sb.from('empresa').select('*').eq('user_id',this.session.user.id).maybeSingle(),
         ]);
         this.d={clientes:a.data||[],proveedores:b.data||[],productos:c.data||[],facturas:e.data||[],pedidos:f.data||[],pedidos_venta:g.data||[],albaranes_venta:h.data||[],albaranes_compra:k.data||[]};
+        this.empresa=emp.data||null;
       }catch(e){
         console.error('Error cargando datos:',e);
       }finally{
         this.dataLoad=false;
       }
     },
+
+    // Guarda datos de empresa (UPSERT por user_id)
+    async saveEmpresa(){
+      if(!this.f.razon_social){this.err('La razón social es obligatoria.');return;}
+      if(this.f.nif && !this.validateNIF(this.f.nif)){this.err('NIF/CIF inválido.');return;}
+      const{created_at,updated_at,...rest}=this.f;
+      const row={...rest,user_id:this.session.user.id};
+      const{error,data}=await sb.from('empresa').upsert(row,{onConflict:'user_id'}).select().single();
+      if(error){this.err('Error: '+error.message);return;}
+      this.empresa=data;
+      this.modal=null;
+      this.ok('✓ Datos de empresa guardados.');
+    },
+
+    // Lee un archivo de imagen y lo convierte a base64 dataURL (≤ 100KB) para el logo
+    onLogoFile(ev){
+      const file=ev.target.files[0];if(!file)return;
+      if(file.size>500*1024){this.err('Logo demasiado grande (máx 500 KB). Reduce el tamaño.');return;}
+      const r=new FileReader();
+      r.onload=()=>{this.f.logo_data=r.result;};
+      r.readAsDataURL(file);
+    },
+    quitarLogo(){this.f.logo_data='';},
+
+    // Helper para los PDFs: HTML del bloque emisor (con logo si lo hay)
+    empBlock(){
+      const e=this.empresa||{};
+      const logo=e.logo_data?`<img src="${e.logo_data}" style="max-width:120px;max-height:80px;margin-bottom:8px;display:block">`:'';
+      const linea=[e.direccion,e.cp+' '+(e.ciudad||''),e.provincia,e.pais].filter(x=>x&&x.trim()&&x.trim()!=='undefined').join(' · ');
+      return {logo,nombre:e.nombre_comercial||e.razon_social||'',razon:e.razon_social||'',nif:e.nif||'',linea,tel:e.telefono||'',email:e.email||'',web:e.web||'',iban:e.iban||'',notas:e.notas_factura||'',color:e.color_primario||'#185FA5'};
+    },
+
+    ok(m){this.sok=m;setTimeout(()=>this.sok='',3000);},
 
     async reload(t){
       const isD=TABLES_DOC.includes(t);
@@ -1008,6 +1158,9 @@ function app(){
         this.f=item?{...item,proveedor_id:String(item.proveedor_id||'')}:{numero:this.nextNum('albaranes_compra','AC'),fecha:this.hoy(),proveedor_id:'',estado:'pendiente',lineas:[],notas:''};
       }else if(tipo==='cambiarPass'){
         this.f={pass1:'',pass2:''};
+      }else if(tipo==='empresa'){
+        const e=this.empresa||{};
+        this.f={razon_social:e.razon_social||'',nombre_comercial:e.nombre_comercial||'',nif:e.nif||'',direccion:e.direccion||'',cp:e.cp||'',ciudad:e.ciudad||'',provincia:e.provincia||'',pais:e.pais||'España',telefono:e.telefono||'',email:e.email||'',web:e.web||'',logo_data:e.logo_data||'',iban:e.iban||'',iva_default:e.iva_default||21,notas_factura:e.notas_factura||'',color_primario:e.color_primario||'#185FA5'};
       }
     },
 
@@ -1173,7 +1326,8 @@ function app(){
       const tf=this.d.facturas.reduce((s,f)=>s+this.tot(f.lineas),0);
       const tc=this.d.pedidos.reduce((s,p)=>s+this.tot(p.lineas),0);
       const slim=arr=>arr.map(x=>{const{user_id,created_at,...r}=x;return r;});
-      return `Eres el Gestor IA de GestorPro para Palets S.L.. Acceso completo a la base de datos en tiempo real (user: ${uid}).
+      const empNombre=(this.empresa&&(this.empresa.nombre_comercial||this.empresa.razon_social))||'la empresa';
+      return `Eres el Gestor IA de GestorPro para ${empNombre}. Acceso completo a la base de datos en tiempo real (user: ${uid}).
 
 RESUMEN: Total facturado ${this.fmt(tf)} | Total compras ${this.fmt(tc)} | Facturas pendientes ${this.d.facturas.filter(f=>f.estado==='enviada').length}
 
@@ -1254,28 +1408,32 @@ CAMPOS EXACTOS POR TABLA (usa SOLO estos, ninguno más):
       this.$nextTick(()=>this.aiScrollBottom());
     },
 
-    aiScrollBottom(){const el=document.getElementById('aiMsgs');if(el)el.scrollTop=el.scrollHeight;}
-    ,pdfFactura(doc){
+    aiScrollBottom(){const el=document.getElementById('aiMsgs');if(el)el.scrollTop=el.scrollHeight;},
+
+    // PDF FACTURA — usa datos dinámicos de this.empresa
+    pdfFactura(doc){
+      const e=this.empBlock();
       const cl=this.d.clientes.find(c=>c.id===doc.cliente_id)||{};
+      const ivaRate=(this.empresa&&this.empresa.iva_default?Number(this.empresa.iva_default):21)/100;
       const base=this.tot(doc.lineas);
-      const iva=base*0.21;
+      const iva=base*ivaRate;
       const total=base+iva;
       const fmt=n=>Number(n).toLocaleString('es-ES',{style:'currency',currency:'EUR'});
       const rows=(doc.lineas||[]).map((l,i)=>`<tr style="background:${i%2===0?'#f9fafb':'#fff'}"><td style="padding:8px 12px;border-bottom:1px solid #eee">${l.desc}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center">${l.qty}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right">${fmt(l.precio)}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600">${fmt(l.qty*l.precio)}</td></tr>`).join('');
       const estadoColor=doc.estado==='pagada'?{bg:'#dcfce7',c:'#166534'}:doc.estado==='enviada'?{bg:'#dbeafe',c:'#1d4ed8'}:{bg:'#fef3c7',c:'#92400e'};
       const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Factura ${doc.numero}</title>
 <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;padding:40px;max-width:800px;margin:0 auto}@media print{body{padding:20px}@page{margin:15mm}}</style></head><body>
-<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;padding-bottom:20px;border-bottom:3px solid #185FA5">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;padding-bottom:20px;border-bottom:3px solid ${e.color}">
   <div>
-    <div style="width:44px;height:44px;background:#185FA5;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px"><svg width="28" height="24" viewBox="0 0 42 36" fill="none"><rect x="1" y="1" width="11" height="5" rx="1" fill="white"/><rect x="15.5" y="1" width="11" height="5" rx="1" fill="white"/><rect x="30" y="1" width="11" height="5" rx="1" fill="white"/><rect x="3" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="19" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="35" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="1" y="15" width="11" height="4" rx="1" fill="white"/><rect x="15.5" y="15" width="11" height="4" rx="1" fill="white"/><rect x="30" y="15" width="11" height="4" rx="1" fill="white"/><rect x="3" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="19" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="35" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="1" y="26" width="40" height="5" rx="1" fill="white"/><rect x="1" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="15.5" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="30" y="31" width="11" height="4" rx="1" fill="#93bbdc"/></svg></div>
-    <div style="font-size:18px;font-weight:700;color:#185FA5">Palets S.L.</div>
-    <div style="font-size:12px;color:#666;margin-top:4px">NIF: B-12345678</div>
-    <div style="font-size:12px;color:#666">Pol. Industrial La Plana, Nave 12</div>
-    <div style="font-size:12px;color:#666">43006 Tarragona · Tel: 977 123 456</div>
-    <div style="font-size:12px;color:#666">info@paletssl.com</div>
+    ${e.logo}
+    <div style="font-size:18px;font-weight:700;color:${e.color}">${e.nombre||'(Configura tu empresa en Ajustes)'}</div>
+    ${e.nif?`<div style="font-size:12px;color:#666;margin-top:4px">NIF: ${e.nif}</div>`:''}
+    ${e.linea?`<div style="font-size:12px;color:#666">${e.linea}</div>`:''}
+    ${e.tel||e.email?`<div style="font-size:12px;color:#666">${[e.tel?'Tel: '+e.tel:'',e.email].filter(Boolean).join(' · ')}</div>`:''}
+    ${e.web?`<div style="font-size:12px;color:#666">${e.web}</div>`:''}
   </div>
   <div style="text-align:right">
-    <div style="font-size:26px;font-weight:700;color:#185FA5">FACTURA</div>
+    <div style="font-size:26px;font-weight:700;color:${e.color}">FACTURA</div>
     <div style="font-size:16px;font-weight:600;margin-top:2px">${doc.numero}</div>
     <div style="font-size:12px;color:#666;margin-top:6px">Fecha: ${doc.fecha}</div>
     <div style="margin-top:6px;display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${estadoColor.bg};color:${estadoColor.c}">${(doc.estado||'').toUpperCase()}</div>
@@ -1284,9 +1442,9 @@ CAMPOS EXACTOS POR TABLA (usa SOLO estos, ninguno más):
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
   <div style="background:#f8fafc;border-radius:8px;padding:14px">
     <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Emisor</div>
-    <div style="font-weight:600">Palets S.L.</div>
-    <div style="font-size:12px;color:#555">NIF: B-12345678</div>
-    <div style="font-size:12px;color:#555">Pol. Industrial La Plana, Nave 12, 43006 Tarragona</div>
+    <div style="font-weight:600">${e.razon||e.nombre||'—'}</div>
+    ${e.nif?`<div style="font-size:12px;color:#555">NIF: ${e.nif}</div>`:''}
+    ${e.linea?`<div style="font-size:12px;color:#555">${e.linea}</div>`:''}
   </div>
   <div style="background:#f8fafc;border-radius:8px;padding:14px">
     <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Facturar a</div>
@@ -1297,23 +1455,27 @@ CAMPOS EXACTOS POR TABLA (usa SOLO estos, ninguno más):
   </div>
 </div>
 <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-  <thead><tr style="background:#185FA5;color:#fff"><th style="padding:9px 12px;text-align:left;font-size:11px">DESCRIPCIÓN</th><th style="padding:9px 12px;text-align:center;font-size:11px;width:70px">CANT.</th><th style="padding:9px 12px;text-align:right;font-size:11px;width:100px">PRECIO</th><th style="padding:9px 12px;text-align:right;font-size:11px;width:100px">TOTAL</th></tr></thead>
+  <thead><tr style="background:${e.color};color:#fff"><th style="padding:9px 12px;text-align:left;font-size:11px">DESCRIPCIÓN</th><th style="padding:9px 12px;text-align:center;font-size:11px;width:70px">CANT.</th><th style="padding:9px 12px;text-align:right;font-size:11px;width:100px">PRECIO</th><th style="padding:9px 12px;text-align:right;font-size:11px;width:100px">TOTAL</th></tr></thead>
   <tbody>${rows}</tbody>
 </table>
 <div style="display:flex;justify-content:flex-end;margin-bottom:32px">
   <div style="width:260px">
     <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#666">Base imponible</span><span>${fmt(base)}</span></div>
-    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#666">IVA (21%)</span><span>${fmt(iva)}</span></div>
-    <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:16px;font-weight:700;color:#185FA5"><span>TOTAL</span><span>${fmt(total)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#666">IVA (${(ivaRate*100).toFixed(0)}%)</span><span>${fmt(iva)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:16px;font-weight:700;color:${e.color}"><span>TOTAL</span><span>${fmt(total)}</span></div>
   </div>
 </div>
-${doc.notas?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 12px;margin-bottom:24px;font-size:12px;color:#555"><strong>Notas:</strong> ${doc.notas}</div>`:''}
-<div style="border-top:1px solid #e5e7eb;padding-top:14px;display:flex;justify-content:space-between;font-size:10px;color:#aaa"><span>Palets S.L. · NIF B-12345678 · info@paletssl.com</span><span>Generado el ${new Date().toLocaleDateString('es-ES')}</span></div>
+${doc.notas?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#555"><strong>Notas:</strong> ${doc.notas}</div>`:''}
+${e.iban?`<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#555"><strong>Forma de pago:</strong> Transferencia a ${e.iban}</div>`:''}
+${e.notas?`<div style="font-size:11px;color:#777;margin-bottom:14px;line-height:1.5">${e.notas}</div>`:''}
+<div style="border-top:1px solid #e5e7eb;padding-top:14px;display:flex;justify-content:space-between;font-size:10px;color:#aaa"><span>${[e.razon||e.nombre,e.nif?'NIF '+e.nif:'',e.email].filter(Boolean).join(' · ')}</span><span>Generado el ${new Date().toLocaleDateString('es-ES')}</span></div>
 <script>window.onload=function(){window.print()}<\/script></body></html>`;
       const w=window.open('','_blank');if(w){w.document.write(html);w.document.close();}
     },
 
+    // PDF ALBARÁN / PEDIDO — usa datos dinámicos de this.empresa
     pdfAlbaran(doc,tipo){
+      const e=this.empBlock();
       const esVenta=['albaran_venta','pedido_venta'].includes(tipo);
       const esAlbaran=tipo.startsWith('albaran');
       const contacto=esVenta?(this.d.clientes.find(c=>c.id===doc.cliente_id)||{}):(this.d.proveedores.find(p=>p.id===doc.proveedor_id)||{});
@@ -1324,12 +1486,12 @@ ${doc.notas?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radi
       const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${tipoLabel} ${doc.numero}</title>
 <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;padding:40px;max-width:800px;margin:0 auto}@media print{body{padding:20px}@page{margin:15mm}}</style></head><body>
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;padding-bottom:16px;border-bottom:2px solid #e5e7eb">
-  <div style="display:flex;align-items:center;gap:10px">
-    <div style="width:40px;height:40px;background:#185FA5;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="26" height="22" viewBox="0 0 42 36" fill="none"><rect x="1" y="1" width="11" height="5" rx="1" fill="white"/><rect x="15.5" y="1" width="11" height="5" rx="1" fill="white"/><rect x="30" y="1" width="11" height="5" rx="1" fill="white"/><rect x="3" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="19" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="35" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="1" y="15" width="11" height="4" rx="1" fill="white"/><rect x="15.5" y="15" width="11" height="4" rx="1" fill="white"/><rect x="30" y="15" width="11" height="4" rx="1" fill="white"/><rect x="3" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="19" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="35" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="1" y="26" width="40" height="5" rx="1" fill="white"/><rect x="1" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="15.5" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="30" y="31" width="11" height="4" rx="1" fill="#93bbdc"/></svg></div>
-    <div><div style="font-size:15px;font-weight:700">Palets S.L.</div><div style="font-size:11px;color:#888">NIF: B-12345678 · Tel: 977 123 456</div></div>
+  <div style="display:flex;align-items:center;gap:14px">
+    ${e.logo}
+    <div><div style="font-size:15px;font-weight:700">${e.nombre||'(Configura tu empresa)'}</div>${e.nif||e.tel?`<div style="font-size:11px;color:#888">${[e.nif?'NIF: '+e.nif:'',e.tel?'Tel: '+e.tel:''].filter(Boolean).join(' · ')}</div>`:''}</div>
   </div>
   <div style="text-align:right">
-    <div style="font-size:11px;font-weight:700;color:#185FA5;letter-spacing:.06em">${tipoLabel}</div>
+    <div style="font-size:11px;font-weight:700;color:${e.color};letter-spacing:.06em">${tipoLabel}</div>
     <div style="font-size:20px;font-weight:700;margin-top:2px">${doc.numero}</div>
     <div style="font-size:12px;color:#666;margin-top:2px">Fecha: ${doc.fecha}</div>
   </div>
@@ -1337,9 +1499,8 @@ ${doc.notas?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radi
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
   <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px">
     <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:5px">Emisor</div>
-    <div style="font-weight:600;font-size:13px">Palets S.L.</div>
-    <div style="font-size:12px;color:#555">Pol. Industrial La Plana, Nave 12</div>
-    <div style="font-size:12px;color:#555">43006 Tarragona</div>
+    <div style="font-weight:600;font-size:13px">${e.razon||e.nombre||'—'}</div>
+    ${e.linea?`<div style="font-size:12px;color:#555">${e.linea}</div>`:''}
   </div>
   <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px">
     <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:5px">${esVenta?'Cliente':'Proveedor'}</div>
@@ -1352,11 +1513,11 @@ ${doc.notas?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radi
 <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
   <thead><tr style="background:#1e293b;color:#fff"><th style="padding:9px 12px;text-align:left;font-size:11px">DESCRIPCIÓN</th><th style="padding:9px 12px;text-align:center;font-size:11px;width:70px">UDS.</th><th style="padding:9px 12px;text-align:right;font-size:11px;width:100px">PRECIO</th><th style="padding:9px 12px;text-align:right;font-size:11px;width:100px">IMPORTE</th></tr></thead>
   <tbody>${rows}</tbody>
-  <tfoot><tr style="background:#f1f5f9"><td colspan="3" style="padding:9px 12px;font-weight:700;text-align:right;font-size:12px">TOTAL</td><td style="padding:9px 12px;font-weight:700;text-align:right;font-size:14px;color:#185FA5">${fmt(total)}</td></tr></tfoot>
+  <tfoot><tr style="background:#f1f5f9"><td colspan="3" style="padding:9px 12px;font-weight:700;text-align:right;font-size:12px">TOTAL</td><td style="padding:9px 12px;font-weight:700;text-align:right;font-size:14px;color:${e.color}">${fmt(total)}</td></tr></tfoot>
 </table>
 ${doc.notas?`<div style="background:#f8fafc;border-radius:6px;padding:9px 12px;margin-bottom:20px;font-size:12px;color:#555"><strong>Observaciones:</strong> ${doc.notas}</div>`:''}
-${esAlbaran?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:36px;padding-top:20px;border-top:1px solid #e5e7eb"><div style="text-align:center"><div style="font-size:11px;color:#888;margin-bottom:44px">Firma y sello emisor</div><div style="border-top:1px solid #aaa;padding-top:5px;font-size:11px;color:#888">Palets S.L.</div></div><div style="text-align:center"><div style="font-size:11px;color:#888;margin-bottom:44px">Firma y sello receptor</div><div style="border-top:1px solid #aaa;padding-top:5px;font-size:11px;color:#888">${contacto.nombre||''}</div></div></div>`:''}
-<div style="margin-top:28px;border-top:1px solid #e5e7eb;padding-top:12px;display:flex;justify-content:space-between;font-size:10px;color:#aaa"><span>Palets S.L. · NIF B-12345678 · Pol. Ind. La Plana Nave 12, 43006 Tarragona</span><span>${new Date().toLocaleDateString('es-ES')}</span></div>
+${esAlbaran?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:36px;padding-top:20px;border-top:1px solid #e5e7eb"><div style="text-align:center"><div style="font-size:11px;color:#888;margin-bottom:44px">Firma y sello emisor</div><div style="border-top:1px solid #aaa;padding-top:5px;font-size:11px;color:#888">${e.razon||e.nombre||''}</div></div><div style="text-align:center"><div style="font-size:11px;color:#888;margin-bottom:44px">Firma y sello receptor</div><div style="border-top:1px solid #aaa;padding-top:5px;font-size:11px;color:#888">${contacto.nombre||''}</div></div></div>`:''}
+<div style="margin-top:28px;border-top:1px solid #e5e7eb;padding-top:12px;display:flex;justify-content:space-between;font-size:10px;color:#aaa"><span>${[e.razon||e.nombre,e.nif?'NIF '+e.nif:'',e.linea].filter(Boolean).join(' · ')}</span><span>${new Date().toLocaleDateString('es-ES')}</span></div>
 <script>window.onload=function(){window.print()}<\/script></body></html>`;
       const w=window.open('','_blank');if(w){w.document.write(html);w.document.close();}
     }
