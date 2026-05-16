@@ -639,7 +639,36 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
       <div class="fld"><label>Dirección de envío</label><input type="text" x-model="f.direccion_envio" placeholder="Calle, número, CP, ciudad"></div>
       <div class="fld"><label>Dirección de facturación</label><input type="text" x-model="f.direccion_facturacion" placeholder="Calle, número, CP, ciudad"></div>
       <div class="fld"><label>Notas</label><textarea x-model="f.notas" style="resize:vertical;height:60px"></textarea></div>
-      <div style="display:flex;gap:8px;justify-content:flex-end">
+
+      <!-- ARCHIVOS ADJUNTOS (DNI, contratos, etc.) -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid #eee">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <label style="font-size:12px;font-weight:600;color:#444;margin:0">Documentos adjuntos <span style="color:#888;font-weight:400" x-text="(f.archivos&&f.archivos.length?'('+f.archivos.length+'/8)':'(0/8)')"></span></label>
+          <label class="bs" style="cursor:pointer;font-size:12px;padding:5px 10px">
+            + Adjuntar
+            <input type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" @change="onArchivosFile($event)" style="display:none">
+          </label>
+        </div>
+        <p style="font-size:11px;color:#888;margin-bottom:8px">DNI, contratos, etc. Máx 2 MB por archivo. Imágenes, PDF, Word, Excel.</p>
+        <template x-if="!f.archivos || f.archivos.length===0">
+          <div style="text-align:center;padding:16px;background:#fafaf8;border-radius:6px;border:1px dashed #ddd;font-size:12px;color:#999">Aún no hay documentos. Adjunta el DNI, contrato u otros.</div>
+        </template>
+        <div x-show="f.archivos && f.archivos.length>0" style="display:flex;flex-direction:column;gap:6px">
+          <template x-for="(a,i) in f.archivos" :key="i">
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#f8f8f6;border:1px solid #eee;border-radius:6px">
+              <span style="font-size:18px" x-text="iconoArchivo(a.tipo)"></span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" x-text="a.nombre" :title="a.nombre"></div>
+                <div style="font-size:10px;color:#999" x-text="formatBytes(a.tamano)+' · '+(a.fecha?new Date(a.fecha).toLocaleDateString('es-ES'):'')"></div>
+              </div>
+              <button class="be" style="padding:3px 8px;font-size:11px" @click="descargarArchivo(a)" title="Descargar">↓</button>
+              <button class="bd" style="padding:3px 8px;font-size:11px" @click="quitarArchivo(i)" title="Quitar">✕</button>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
         <button class="bs" @click="modal=null">Cancelar</button>
         <button class="bp" @click="saveContact()">Guardar</button>
       </div>
@@ -1121,6 +1150,37 @@ function app(){
     },
     quitarLogo(){this.f.logo_data='';},
 
+    // ===== Adjuntos en clientes/proveedores (DNI, contratos, etc.) =====
+    onArchivosFile(ev){
+      const files=Array.from(ev.target.files||[]);
+      if(!files.length)return;
+      const actual=(this.f.archivos||[]).length;
+      if(actual+files.length>8){this.err('Máximo 8 archivos por contacto.');return;}
+      const max=2*1024*1024;
+      for(const file of files){
+        if(file.size>max){this.err(`"${file.name}" supera 2 MB.`);continue;}
+        const r=new FileReader();
+        r.onload=()=>{
+          this.f.archivos=[...(this.f.archivos||[]),{nombre:file.name,tipo:file.type||'application/octet-stream',tamano:file.size,data:r.result,fecha:new Date().toISOString()}];
+        };
+        r.readAsDataURL(file);
+      }
+      ev.target.value='';
+    },
+    quitarArchivo(i){if(!confirm('¿Quitar este archivo? Se perderá al guardar.'))return;this.f.archivos=this.f.archivos.filter((_,idx)=>idx!==i);},
+    descargarArchivo(a){
+      const link=document.createElement('a');link.href=a.data;link.download=a.nombre;document.body.appendChild(link);link.click();document.body.removeChild(link);
+    },
+    iconoArchivo(tipo){
+      if(!tipo)return '📄';
+      if(tipo.startsWith('image/'))return '🖼️';
+      if(tipo.includes('pdf'))return '📕';
+      if(tipo.includes('word')||tipo.includes('document'))return '📘';
+      if(tipo.includes('sheet')||tipo.includes('excel'))return '📗';
+      return '📄';
+    },
+    formatBytes(b){if(!b)return '0 B';const k=1024,sizes=['B','KB','MB','GB'];const i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(1))+' '+sizes[i];},
+
     // Helper para los PDFs: HTML del bloque emisor (con logo si lo hay)
     empBlock(){
       const e=this.empresa||{};
@@ -1143,7 +1203,7 @@ function app(){
     open(tipo,item=null){
       this.modal=tipo;this.nl={desc:'',qty:1,precio:''};
       if(tipo==='cliente'||tipo==='proveedor'){
-        this.f=item?{...item}:{nombre:'',email:'',telefono:'',nif:'',ciudad:'',direccion_envio:'',direccion_facturacion:'',notas:''};
+        this.f=item?{...item,archivos:item.archivos||[]}:{nombre:'',email:'',telefono:'',nif:'',ciudad:'',direccion_envio:'',direccion_facturacion:'',notas:'',archivos:[]};
       }else if(tipo==='producto'){
         this.f=item?{...item}:{nombre:'',categoria:'',precio_venta:'',precio_compra:'',stock:'',unidad:'ud'};
       }else if(tipo==='factura'){
