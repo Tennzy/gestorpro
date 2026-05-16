@@ -224,6 +224,43 @@ ipcMain.handle('auth:change-pass', (event, { newP }) => {
 
 ipcMain.handle('auth:get-session', () => session);
 
+// === Gestión multi-usuario (solo admin) ===
+function requireAdmin() {
+  if (!session) throw new Error('not_authenticated');
+  if (session.role !== 'admin') throw new Error('admin_required');
+}
+
+ipcMain.handle('users:list',   () => { requireAdmin(); return db.auth.listUsers(); });
+ipcMain.handle('users:create', (event, { u, p, role }) => {
+  requireAdmin();
+  try { return { ok: true, user: db.auth.createUser(u, p, role) }; }
+  catch (e) { return { ok: false, error: e.message }; }
+});
+ipcMain.handle('users:reset-pass', (event, { userId, newPass }) => {
+  requireAdmin();
+  try { db.auth.resetUserPass(userId, newPass); return { ok: true }; }
+  catch (e) { return { ok: false, error: e.message }; }
+});
+ipcMain.handle('users:update-role', (event, { userId, role }) => {
+  requireAdmin();
+  try { db.auth.updateUserRole(userId, role); return { ok: true }; }
+  catch (e) { return { ok: false, error: e.message }; }
+});
+ipcMain.handle('users:delete', (event, { userId }) => {
+  requireAdmin();
+  if (session.user_id === userId) return { ok: false, error: 'cannot_delete_self' };
+  try { db.auth.deleteUser(userId); return { ok: true }; }
+  catch (e) { return { ok: false, error: e.message }; }
+});
+
+// === SQL Studio (admin only) ===
+ipcMain.handle('db:exec-sql', (event, { sql, params }) => {
+  requireAdmin();
+  try { return { ok: true, result: db.execSql(sql, params) }; }
+  catch (e) { return { ok: false, error: e.message }; }
+});
+ipcMain.handle('db:list-tables', () => { requireAdmin(); return db.listTables(); });
+
 // ================== LIFECYCLE ==================
 
 app.whenReady().then(async () => {

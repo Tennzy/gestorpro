@@ -264,6 +264,18 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
           <span x-text="n.l"></span>
         </button>
       </template>
+      <template x-if="isElectron && isAdmin">
+        <div>
+          <div class="nav-sep" x-show="navAdmin.length">Administración</div>
+          <template x-for="n in navAdmin" :key="n.id">
+            <button @click="sec=n.id;q='';mobMenu=false;if(n.id==='usuarios')reloadUsers();"
+              :style="`display:flex;align-items:center;gap:10px;width:100%;padding:11px 16px;border:none;cursor:pointer;text-align:left;font-size:14px;border-left:3px solid ${sec===n.id?'#185FA5':'transparent'};background:${sec===n.id?'#EFF6FF':'transparent'};color:${sec===n.id?'#1d4ed8':'#555'};font-weight:${sec===n.id?600:400}`">
+              <span style="font-family:monospace;font-size:14px" x-text="n.s"></span>
+              <span x-text="n.l"></span>
+            </button>
+          </template>
+        </div>
+      </template>
       <div style="padding:10px 0 0">
         <button class="ai-sb-btn" @click="aiToggle();mobMenu=false">
           <span style="font-size:14px">✦</span> Gestor IA
@@ -539,6 +551,99 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
         </table>
       </div></div>
       <p style="font-size:12px;color:#999;margin-top:8px" x-text="filt('albaranes_compra').length+' registros'"></p>
+    </div>
+
+    <!-- USUARIOS · gestión multi-usuario (admin only, solo Electron) -->
+    <div x-show="sec==='usuarios' && isElectron && isAdmin">
+      <div class="sec-head" style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Usuarios</h2><div style="flex:1"></div>
+        <button class="bs" @click="reloadUsers()" title="Recargar">↻</button>
+        <button class="bp" @click="crearUsuario()">+ Crear usuario</button>
+      </div>
+      <p style="color:#666;margin-bottom:18px;font-size:13px;max-width:680px">
+        Gestiona quién accede a la aplicación. Los roles son:
+        <strong>admin</strong> (todo), <strong>user</strong> (no ve esta sección ni la de Base de datos), <strong>viewer</strong> (solo lectura).
+        Para resetear una contraseña olvidada, usa el botón "Reset contraseña".
+      </p>
+      <div class="tbl-wrap"><div class="card" style="overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th>ID</th><th>Usuario</th><th>Rol</th><th>Creado</th><th>Último login</th><th></th></tr></thead>
+          <tbody>
+            <tr x-show="!users.length"><td colspan="6" style="text-align:center;color:#999;padding:40px 0">No hay usuarios cargados. Pulsa ↻ para recargar.</td></tr>
+            <template x-for="u in users" :key="u.id">
+              <tr>
+                <td x-text="u.id"></td>
+                <td style="font-weight:600" x-text="u.username"></td>
+                <td><span :style="`display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:${u.role==='admin'?'#fef3c7':u.role==='viewer'?'#f1f5f9':'#dbeafe'};color:${u.role==='admin'?'#92400e':u.role==='viewer'?'#475569':'#1d4ed8'}`" x-text="u.role"></span></td>
+                <td style="font-size:12px;color:#666" x-text="u.created_at"></td>
+                <td style="font-size:12px;color:#666" x-text="u.last_login_at||'(nunca)'"></td>
+                <td style="text-align:right;white-space:nowrap">
+                  <button class="be" @click="resetUserPass(u)" title="Cambiar contraseña">🔑 Reset</button>
+                  <button class="be" @click="cambiarRol(u)" title="Cambiar rol">Rol</button>
+                  <button class="bd" @click="eliminarUsuario(u)" :disabled="u.id===session?.user?.id" :title="u.id===session?.user?.id?'No puedes eliminarte a ti mismo':'Eliminar'">✕</button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div></div>
+      <p style="font-size:12px;color:#999;margin-top:8px" x-text="users.length+' usuarios'"></p>
+    </div>
+
+    <!-- SQL STUDIO · editor SQL avanzado (admin only, solo Electron) -->
+    <div x-show="sec==='sql' && isElectron && isAdmin">
+      <div class="sec-head" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Base de datos · SQL</h2>
+      </div>
+      <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#92400e">
+        <strong>⚠ Modo experto.</strong> Las consultas se ejecutan directamente sobre <code>gestorpro.db</code>. Asegúrate de tener un backup antes de modificar nada.
+      </div>
+
+      <p style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Consultas rápidas</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="be" @click="sqlPrefab('SELECT id, username, role, created_at, last_login_at FROM usuarios ORDER BY id;')">Ver usuarios</button>
+        <button class="be" @click="sqlPrefab('SELECT name FROM sqlite_master WHERE type=\\'table\\' ORDER BY name;')">Listar tablas</button>
+        <button class="be" @click="sqlPrefab('SELECT COUNT(*) AS clientes FROM clientes UNION ALL SELECT COUNT(*) FROM proveedores UNION ALL SELECT COUNT(*) FROM productos UNION ALL SELECT COUNT(*) FROM facturas;')">Contar registros</button>
+        <button class="be" @click="sqlPrefab('-- Reset contraseña de un usuario: cambia el ID y la contraseña\\n-- Esto NO funciona directo en SQL porque la pass se hashea con pbkdf2 + sal\\n-- Usa la sección Usuarios → botón Reset, es la forma correcta')">Reset password (info)</button>
+        <button class="be" @click="sqlPrefab('SELECT numero, fecha, estado FROM facturas ORDER BY fecha DESC LIMIT 20;')">Últimas facturas</button>
+        <button class="be" @click="sqlPrefab('PRAGMA table_info(clientes);')">Schema clientes</button>
+      </div>
+
+      <textarea x-model="sqlText" @keydown.ctrl.enter="runSql()" @keydown.meta.enter="runSql()" placeholder="SELECT * FROM clientes LIMIT 10;" style="width:100%;min-height:140px;font-family:'Consolas','Monaco',monospace;font-size:13px;padding:12px;border:1px solid #ddd;border-radius:6px;resize:vertical;background:#1e293b;color:#e2e8f0;line-height:1.5"></textarea>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
+        <button class="bp" @click="runSql()" :disabled="sqlBusy">
+          <span x-text="sqlBusy?'Ejecutando...':'▶ Ejecutar (Ctrl+Enter)'"></span>
+        </button>
+        <button class="bs" @click="sqlText='';sqlResult=null">Limpiar</button>
+        <button class="bs" @click="exportSqlCsv()" x-show="sqlResult && sqlResult.kind==='rows' && sqlResult.rows.length">⬇ Exportar CSV</button>
+        <span x-show="sqlResult && sqlResult.kind==='rows'" style="font-size:12px;color:#666" x-text="sqlResult.count+' filas devueltas'"></span>
+        <span x-show="sqlResult && sqlResult.kind==='ok'" style="font-size:12px;color:#16a34a" x-text="'✓ '+sqlResult.message"></span>
+        <span x-show="sqlResult && sqlResult.kind==='error'" style="font-size:12px;color:#dc2626" x-text="'❌ '+sqlResult.message"></span>
+      </div>
+
+      <div x-show="sqlResult && sqlResult.kind==='rows'" style="margin-top:14px;overflow-x:auto;max-height:60vh;overflow-y:auto;border:1px solid #e5e7eb;border-radius:6px">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;font-family:'Consolas',monospace">
+          <thead style="position:sticky;top:0;background:#f8fafc">
+            <tr>
+              <template x-for="c in (sqlResult.cols||[])" :key="c"><th style="padding:8px 12px;text-align:left;border-bottom:1px solid #e5e7eb;font-size:11px;text-transform:uppercase;color:#475569" x-text="c"></th></template>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(row,i) in sqlResult.rows" :key="i">
+              <tr :style="`background:${i%2?'#f9fafb':'#fff'}`">
+                <template x-for="c in (sqlResult.cols||[])" :key="c">
+                  <td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="row[c]" x-text="row[c]===null?'NULL':(typeof row[c]==='object'?JSON.stringify(row[c]):String(row[c]).slice(0,120))"></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:10px;font-size:11px;color:#888">
+        Atajos: <code>Ctrl+Enter</code> ejecuta. SQLite admite la mayoría de SQL estándar (SELECT, INSERT, UPDATE, DELETE, ALTER, CREATE…).
+        Las contraseñas están hasheadas con PBKDF2 — usa el botón "Reset" en la sección Usuarios para cambiar contraseñas correctamente.
+      </p>
     </div>
 
     <!-- EMPRESA · datos legales para facturas/albaranes -->
@@ -1158,7 +1263,7 @@ function app(){
   const TABLES_DOC=['facturas','pedidos','pedidos_venta','albaranes_venta','albaranes_compra'];
   return {
     authLoad:true,dataLoad:false,session:null,
-    isElectron:IS_ELECTRON,needsSignup:false,
+    isElectron:IS_ELECTRON,needsSignup:false,isAdmin:false,
     lemail:'',lpass:'',lerr:'',lloading:false,
     sec:'dashboard',q:'',
     d:{clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[],pedidos_venta:[],albaranes_venta:[],albaranes_compra:[]},
@@ -1177,6 +1282,12 @@ function app(){
       {id:'albaranes_compra',l:'Albaranes compra',s:'◨'},
       {id:'empresa',l:'Mi empresa',s:'⚙'},
     ],
+    navAdmin:[
+      {id:'usuarios',l:'Usuarios',s:'☻'},
+      {id:'sql',l:'Base de datos',s:'⌘'},
+    ],
+    users:[],  // lista de usuarios (cache)
+    sqlText:'',sqlResult:null,sqlBusy:false,sqlTables:[],
     aiOpen:false,aiMsgs:[],aiLoad:false,aiInput:'',aiHistory:[],mobMenu:false,
 
     async init(){
@@ -1187,8 +1298,20 @@ function app(){
       }
       const {data:{session}}=await sb.auth.getSession();
       this.session=session;this.authLoad=false;
-      if(session) this.load();
-      sb.auth.onAuthStateChange((_,s)=>{this.session=s;if(s){this.load();}else{this.empresa=null;this.d={clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[],pedidos_venta:[],albaranes_venta:[],albaranes_compra:[]};}});
+      if(session){ await this.refreshRole(); this.load(); }
+      sb.auth.onAuthStateChange(async (_,s)=>{
+        this.session=s;
+        if(s){ await this.refreshRole(); this.load(); }
+        else{ this.empresa=null; this.isAdmin=false; this.d={clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[],pedidos_venta:[],albaranes_venta:[],albaranes_compra:[]};}
+      });
+    },
+
+    async refreshRole(){
+      if(!IS_ELECTRON){this.isAdmin=false;return;}
+      try{
+        const s = await window.gpAPI.getSession();
+        this.isAdmin = !!(s && s.role === 'admin');
+      }catch(_e){ this.isAdmin = false; }
     },
 
     async signupAdmin(){
@@ -1565,6 +1688,85 @@ CAMPOS EXACTOS POR TABLA (usa SOLO estos, ninguno más):
     },
 
     aiScrollBottom(){const el=document.getElementById('aiMsgs');if(el)el.scrollTop=el.scrollHeight;},
+
+    // ============ MULTI-USUARIO (admin only, solo Electron) ============
+    async reloadUsers(){
+      if(!IS_ELECTRON||!this.isAdmin)return;
+      try{ this.users = await window.gpAPI.usersList()||[]; }catch(e){ this.err('Error: '+e.message); }
+    },
+    async crearUsuario(){
+      const u=prompt('Nombre de usuario (3-20 caracteres, letras/números/_):');
+      if(!u)return;
+      const p=prompt('Contraseña inicial (mín. 6 caracteres):');
+      if(!p)return;
+      const role=prompt('Rol (admin / user / viewer):','user');
+      if(!role)return;
+      const r=await window.gpAPI.usersCreate(u,p,role.trim().toLowerCase());
+      if(!r.ok){this.err(this.userErrMsg(r.error));return;}
+      this.ok(`✓ Usuario "${u}" creado con rol ${role}.`);
+      await this.reloadUsers();
+    },
+    async resetUserPass(user){
+      const p=prompt(`Nueva contraseña para "${user.username}" (mín. 6 caracteres):`);
+      if(!p)return;
+      const r=await window.gpAPI.usersResetPass(user.id,p);
+      if(!r.ok){this.err(this.userErrMsg(r.error));return;}
+      this.ok(`✓ Contraseña de "${user.username}" cambiada.`);
+    },
+    async cambiarRol(user){
+      const r=prompt(`Nuevo rol para "${user.username}" (admin/user/viewer):`,user.role);
+      if(!r)return;
+      const res=await window.gpAPI.usersUpdateRole(user.id,r.trim().toLowerCase());
+      if(!res.ok){this.err(this.userErrMsg(res.error));return;}
+      this.ok(`✓ Rol de "${user.username}" cambiado a ${r}.`);
+      await this.reloadUsers();
+    },
+    async eliminarUsuario(user){
+      if(!confirm(`¿Eliminar al usuario "${user.username}"? No se puede deshacer.`))return;
+      const r=await window.gpAPI.usersDelete(user.id);
+      if(!r.ok){this.err(this.userErrMsg(r.error));return;}
+      this.ok(`✓ Usuario "${user.username}" eliminado.`);
+      await this.reloadUsers();
+    },
+    userErrMsg(code){
+      const map={
+        invalid_username:'Usuario inválido (3-20 caracteres: letras, números, _).',
+        username_taken:'Ese nombre de usuario ya existe.',
+        password_too_short:'Contraseña demasiado corta (mín. 6 caracteres).',
+        invalid_role:'Rol inválido. Usa: admin, user o viewer.',
+        cannot_delete_last_admin:'No puedes eliminar al último admin.',
+        cannot_delete_self:'No puedes eliminar tu propia cuenta. Pide a otro admin que lo haga.',
+        admin_required:'Requiere rol admin.',
+        not_authenticated:'Sesión expirada.',
+      };
+      return map[code]||code;
+    },
+
+    // ============ SQL STUDIO (admin only, solo Electron) ============
+    async runSql(){
+      if(!this.sqlText.trim()){this.err('Escribe una consulta SQL primero.');return;}
+      // Si es destructiva, pedir confirmación
+      const destructive=/^\s*(delete|update|drop|alter|truncate)\b/i.test(this.sqlText.trim());
+      if(destructive && !confirm('Esta consulta modifica datos. ¿Continuar?'))return;
+      this.sqlBusy=true; this.sqlResult=null;
+      try{
+        const r=await window.gpAPI.execSql(this.sqlText,[]);
+        if(!r.ok){this.sqlResult={kind:'error',message:r.error};}
+        else this.sqlResult=r.result;
+      }catch(e){ this.sqlResult={kind:'error',message:e.message}; }
+      this.sqlBusy=false;
+    },
+    sqlPrefab(query){ this.sqlText=query; },
+    exportSqlCsv(){
+      if(!this.sqlResult||this.sqlResult.kind!=='rows')return;
+      const {cols,rows}=this.sqlResult;
+      const esc=v=>{if(v==null)return '';const s=String(v);return /[,\n"]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+      const csv=[cols.join(',')].concat(rows.map(r=>cols.map(c=>esc(r[c])).join(','))).join('\n');
+      const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download='consulta.csv';a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    },
 
     // PDF FACTURA — usa datos dinámicos de this.empresa
     pdfFactura(doc){

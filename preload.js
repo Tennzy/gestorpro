@@ -21,6 +21,17 @@ contextBridge.exposeInMainWorld('gpAPI', {
   changePass:   (newP)    => ipcRenderer.invoke('auth:change-pass', { newP }),
   getSession:   ()        => ipcRenderer.invoke('auth:get-session'),
 
+  // Multi-usuario (admin)
+  usersList:        ()                    => ipcRenderer.invoke('users:list'),
+  usersCreate:      (u, p, role)          => ipcRenderer.invoke('users:create', { u, p, role }),
+  usersResetPass:   (userId, newPass)     => ipcRenderer.invoke('users:reset-pass', { userId, newPass }),
+  usersUpdateRole:  (userId, role)        => ipcRenderer.invoke('users:update-role', { userId, role }),
+  usersDelete:      (userId)              => ipcRenderer.invoke('users:delete', { userId }),
+
+  // SQL Studio (admin)
+  execSql:          (sql, params)         => ipcRenderer.invoke('db:exec-sql', { sql, params }),
+  listTables:       ()                    => ipcRenderer.invoke('db:list-tables'),
+
   // File system para abrir/guardar
   saveFile:     (args)   => ipcRenderer.invoke('app:save-file', args),
   openFile:     (args)   => ipcRenderer.invoke('app:open-file', args),

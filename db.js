@@ -53,8 +53,11 @@ function createSchema() {
     password_hash TEXT NOT NULL,
     salt TEXT NOT NULL,
     role TEXT DEFAULT 'admin',
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TEXT DEFAULT (datetime('now')),
+    last_login_at TEXT
   )`);
+  // Migración silenciosa: añadir last_login_at si no existía
+  try { db.exec(`ALTER TABLE usuarios ADD COLUMN last_login_at TEXT`); } catch (_e) { /* ya existe */ }
 
   // Empresa (siempre id=1, singleton)
   db.exec(`CREATE TABLE IF NOT EXISTS empresa (
@@ -167,22 +170,46 @@ const auth = {
     if (!u) throw new Error('invalid_credentials');
     const { hash } = hashPassword(password, u.salt);
     if (hash !== u.password_hash) throw new Error('invalid_credentials');
+    db.prepare('UPDATE usuarios SET last_login_at = datetime(\'now\') WHERE id = ?').run(u.id);
     return { user_id: u.id, username: u.username, role: u.role };
   },
-  signup(username, password) {
+  signup(username, password, role) {
     const uname = String(username).trim().toLowerCase();
     if (!/^[a-z0-9_]{3,20}$/.test(uname)) throw new Error('invalid_username');
     if (!password || password.length < 6) throw new Error('password_too_short');
     const exists = db.prepare('SELECT 1 FROM usuarios WHERE username = ?').get(uname);
     if (exists) throw new Error('username_taken');
     const { hash, salt } = hashPassword(password);
-    const r = db.prepare('INSERT INTO usuarios (username, password_hash, salt) VALUES (?, ?, ?)').run(uname, hash, salt);
-    return { user_id: r.lastInsertRowid, username: uname, role: 'admin' };
+    const r = db.prepare('INSERT INTO usuarios (username, password_hash, salt, role) VALUES (?, ?, ?, ?)').run(uname, hash, salt, role || 'admin');
+    return { user_id: r.lastInsertRowid, username: uname, role: role || 'admin' };
   },
   changePass(userId, newPassword) {
     if (!newPassword || newPassword.length < 6) throw new Error('password_too_short');
     const { hash, salt } = hashPassword(newPassword);
     db.prepare('UPDATE usuarios SET password_hash = ?, salt = ? WHERE id = ?').run(hash, salt, userId);
+    return { ok: true };
+  },
+  // === Gestión multi-usuario (solo admin) ===
+  listUsers() {
+    return db.prepare('SELECT id, username, role, created_at, last_login_at FROM usuarios ORDER BY id').all();
+  },
+  createUser(username, password, role) {
+    return this.signup(username, password, role || 'user');
+  },
+  resetUserPass(userId, newPassword) {
+    return this.changePass(userId, newPassword);
+  },
+  updateUserRole(userId, newRole) {
+    if (!['admin','user','viewer'].includes(newRole)) throw new Error('invalid_role');
+    db.prepare('UPDATE usuarios SET role = ? WHERE id = ?').run(newRole, userId);
+    return { ok: true };
+  },
+  deleteUser(userId) {
+    // Impedir borrar al último admin (para no dejar la app sin admins)
+    const remaining = db.prepare('SELECT count(*) AS n FROM usuarios WHERE role = ? AND id != ?').get('admin', userId).n;
+    const isAdmin = db.prepare('SELECT role FROM usuarios WHERE id = ?').get(userId)?.role === 'admin';
+    if (isAdmin && remaining < 1) throw new Error('cannot_delete_last_admin');
+    db.prepare('DELETE FROM usuarios WHERE id = ?').run(userId);
     return { ok: true };
   },
 };
@@ -370,4 +397,39 @@ async function autoBackup() {
 
 function close() { try { if (db) db.close(); } catch (_e) {} }
 
-module.exports = { init, query, auth, info, backup, autoBackup, close };
+// ============== EXEC SQL (modo experto · admin only) ==============
+// Ejecuta SQL libre. Devuelve filas (SELECT/RETURNING) o {changes, lastInsertRowid}.
+// Distingue entre SELECT (read-only) y comandos que modifican.
+function execSql(sql, params) {
+  if (!sql || typeof sql !== 'string') throw new Error('sql_required');
+  const trimmed = sql.trim();
+  if (!trimmed) throw new Error('sql_empty');
+  // Detectar si es solo SELECT (sin punto y coma seguido de otras cosas)
+  const isPureSelect = /^\s*select\b/i.test(trimmed) && !/;\s*\S/.test(trimmed.replace(/;\s*$/, ''));
+  try {
+    if (isPureSelect) {
+      const stmt = db.prepare(trimmed.replace(/;\s*$/, ''));
+      const rows = stmt.all(...(params || []));
+      const cols = rows.length > 0 ? Object.keys(rows[0]) : (stmt.columns ? stmt.columns().map(c => c.name) : []);
+      return { kind: 'rows', cols, rows, count: rows.length };
+    } else {
+      // Para INSERT/UPDATE/DELETE/DDL usamos exec si tiene varias sentencias, o prepare/run si una sola
+      const hasMulti = (trimmed.replace(/;\s*$/, '').match(/;/g) || []).length > 0;
+      if (hasMulti) {
+        db.exec(trimmed);
+        return { kind: 'ok', message: 'Sentencias ejecutadas (múltiples).' };
+      }
+      const stmt = db.prepare(trimmed);
+      const r = stmt.run(...(params || []));
+      return { kind: 'ok', changes: r.changes, lastInsertRowid: r.lastInsertRowid, message: `${r.changes} fila(s) afectada(s).` };
+    }
+  } catch (e) {
+    throw new Error(e.message);
+  }
+}
+
+function listTables() {
+  return db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all().map(r => r.name);
+}
+
+module.exports = { init, query, auth, info, backup, autoBackup, close, execSql, listTables };
