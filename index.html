@@ -212,15 +212,28 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
         <svg width="42" height="36" viewBox="0 0 42 36" fill="none"><rect x="1" y="1" width="11" height="5" rx="1" fill="white"/><rect x="15.5" y="1" width="11" height="5" rx="1" fill="white"/><rect x="30" y="1" width="11" height="5" rx="1" fill="white"/><rect x="3" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="19" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="35" y="6" width="4" height="9" rx="1" fill="#93bbdc"/><rect x="1" y="15" width="11" height="4" rx="1" fill="white"/><rect x="15.5" y="15" width="11" height="4" rx="1" fill="white"/><rect x="30" y="15" width="11" height="4" rx="1" fill="white"/><rect x="3" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="19" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="35" y="19" width="4" height="7" rx="1" fill="#93bbdc"/><rect x="1" y="26" width="40" height="5" rx="1" fill="white"/><rect x="1" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="15.5" y="31" width="11" height="4" rx="1" fill="#93bbdc"/><rect x="30" y="31" width="11" height="4" rx="1" fill="#93bbdc"/></svg>
       </div>
       <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">GestorPro</h2>
-      <p style="color:#999;font-size:13px">Panel de gestión</p>
+      <p style="color:#999;font-size:13px" x-text="needsSignup?'Crea tu cuenta de administrador':'Panel de gestión'"></p>
     </div>
-    <div class="fld"><label>Email</label><input type="email" x-model="lemail" placeholder="tu@email.com" @keyup.enter="login()"></div>
-    <div class="fld"><label>Contraseña</label><input type="password" x-model="lpass" placeholder="••••••••" @keyup.enter="login()"></div>
+    <div x-show="needsSignup" style="background:#fef3c7;border:1px solid #fde68a;border-radius:6px;padding:9px 12px;margin-bottom:14px;font-size:12px;color:#92400e">
+      <strong>Primera vez:</strong> esta cuenta será el administrador de tu base de datos local. Guarda bien la contraseña — no hay forma de recuperarla offline.
+    </div>
+    <div class="fld">
+      <label x-text="isElectron?'Usuario':'Email'"></label>
+      <input :type="isElectron?'text':'email'" x-model="lemail" :placeholder="isElectron?'admin':'tu@email.com'" @keyup.enter="needsSignup?signupAdmin():login()" :autocomplete="needsSignup?'username':'username'">
+    </div>
+    <div class="fld">
+      <label>Contraseña</label>
+      <input type="password" x-model="lpass" placeholder="••••••••" @keyup.enter="needsSignup?signupAdmin():login()" :autocomplete="needsSignup?'new-password':'current-password'">
+    </div>
     <div class="errbox" x-show="lerr" x-text="lerr"></div>
-    <button class="bp" style="width:100%;padding:11px 0;font-size:14px" @click="login()" :disabled="lloading">
+    <button x-show="!needsSignup" class="bp" style="width:100%;padding:11px 0;font-size:14px" @click="login()" :disabled="lloading">
       <span x-text="lloading?'Entrando...':'Entrar'"></span>
     </button>
-    <p style="text-align:center;margin-top:14px;font-size:12px"><a @click.prevent="recuperarPass()" href="#" style="color:#185FA5;text-decoration:none">¿Olvidaste tu contraseña?</a></p>
+    <button x-show="needsSignup" class="bp" style="width:100%;padding:11px 0;font-size:14px" @click="signupAdmin()" :disabled="lloading">
+      <span x-text="lloading?'Creando...':'Crear administrador'"></span>
+    </button>
+    <p x-show="!needsSignup && !isElectron" style="text-align:center;margin-top:14px;font-size:12px"><a @click.prevent="recuperarPass()" href="#" style="color:#185FA5;text-decoration:none">¿Olvidaste tu contraseña?</a></p>
+    <p x-show="isElectron" style="text-align:center;margin-top:14px;font-size:11px;color:#888">Base de datos local · 100% offline</p>
   </div>
 </div>
 
@@ -1069,14 +1082,83 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
 
 </div>
 <script>
+// ============================================================
+// ADAPTER DUAL: Electron (SQLite local) o Web (Supabase)
+// El renderer no sabe de dónde vienen los datos: misma API.
+// ============================================================
+const IS_ELECTRON = !!(window.gpAPI && window.gpAPI.isElectron);
+const SUPA_URL = 'https://uludefpsovlfbodbihig.supabase.co';
+const SUPA_KEY = 'sb_publishable_HTl21hRegaA86sJgUmJ61w_02rjod9n';
+
+// ----- LocalDb (SQLite via IPC) -----
+class LocalQuery {
+  constructor(table) { this.t=table; this.f=[]; this._cmd=null; this._data=null; this._order=null; this._single=null; this._opts=null; }
+  select(_cols='*'){ this._cmd='select'; return this; }
+  insert(data){ this._cmd='insert'; this._data=data; return this; }
+  upsert(data,opts){ this._cmd='upsert'; this._data=data; this._opts=opts||{}; return this; }
+  update(data){ this._cmd='update'; this._data=data; return this; }
+  delete(){ this._cmd='delete'; return this; }
+  eq(c,v){ if(c==='user_id') return this; this.f.push({op:'eq',c,v}); return this; }
+  in(c,vs){ this.f.push({op:'in',c,v:vs}); return this; }
+  order(c,opts){ this._order={c,asc:opts?opts.ascending!==false:true}; return this; }
+  maybeSingle(){ this._single='maybe'; return this._exec(); }
+  single(){ this._single='one'; return this._exec(); }
+  async _exec(){
+    try{
+      const res = await window.gpAPI.query({table:this.t,cmd:this._cmd||'select',data:this._data,filters:this.f,order:this._order,single:this._single,opts:this._opts});
+      return {data:res,error:null};
+    }catch(e){ return {data:null,error:{message:e.message}}; }
+  }
+  then(res,rej){ return this._exec().then(res,rej); }
+  catch(rej){ return this._exec().catch(rej); }
+}
+
+const localDbAdapter = {
+  from(table){ return new LocalQuery(table); },
+  rpc(){ return Promise.resolve({data:null,error:{message:'rpc_not_local'}}); },
+  auth: {
+    _listeners:[],
+    _session:null,
+    async getSession(){
+      this._session = await window.gpAPI.getSession();
+      return {data:{session:this._session?{user:{id:this._session.user_id,email:this._session.username}}:null}};
+    },
+    onAuthStateChange(cb){ this._listeners.push(cb); return {data:{subscription:{unsubscribe(){}}}}; },
+    _emit(){ const s = this._session?{user:{id:this._session.user_id,email:this._session.username}}:null; this._listeners.forEach(cb=>cb(null,s)); },
+    async signInWithPassword({email,password}){
+      const r = await window.gpAPI.login(email,password);
+      if(!r.ok) return {error:{message:r.error==='invalid_credentials'?'Email o contraseña incorrectos.':r.error}};
+      this._session = r.session;
+      this._emit();
+      return {data:{session:{user:{id:r.session.user_id,email:r.session.username}}},error:null};
+    },
+    async signUp({email,password}){
+      const r = await window.gpAPI.signup(email,password);
+      if(!r.ok) return {error:{message:r.error}};
+      this._session = r.session;
+      this._emit();
+      return {data:{session:{user:{id:r.session.user_id,email:r.session.username}}},error:null};
+    },
+    async signOut(){ await window.gpAPI.logout(); this._session=null; this._emit(); return {error:null}; },
+    async updateUser({password}){
+      const r = await window.gpAPI.changePass(password);
+      return r.ok ? {data:{},error:null} : {error:{message:r.error}};
+    },
+    async resetPasswordForEmail(){ return {error:{message:'La recuperación por email no está disponible offline. Pide a un administrador que te resetee la contraseña.'}}; },
+  },
+};
+
+// ----- Adapter elegido -----
+const sb = IS_ELECTRON ? localDbAdapter : window.supabase.createClient(SUPA_URL, SUPA_KEY);
+const HAS_SIGNUP = IS_ELECTRON; // signup solo en local (primer admin)
+
 function app(){
-  const {createClient}=window.supabase;
-  const sb=createClient('https://uludefpsovlfbodbihig.supabase.co','sb_publishable_HTl21hRegaA86sJgUmJ61w_02rjod9n');
   const ECOL={borrador:{bg:'#F1EFE8',c:'#5F5E5A'},confirmado:{bg:'#dbeafe',c:'#1d4ed8'},enviada:{bg:'#dbeafe',c:'#1d4ed8'},enviado:{bg:'#dbeafe',c:'#1d4ed8'},pagada:{bg:'#dcfce7',c:'#166534'},recibido:{bg:'#dcfce7',c:'#166534'},entregado:{bg:'#dcfce7',c:'#166534'},facturado:{bg:'#ede9fe',c:'#6d28d9'},cancelada:{bg:'#fee2e2',c:'#991b1b'},cancelado:{bg:'#fee2e2',c:'#991b1b'},pendiente:{bg:'#fef3c7',c:'#92400e'}};
   function md2html(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/^[-•] (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>)/s,'<ul>$1</ul>').replace(/\n/g,'<br>');}
   const TABLES_DOC=['facturas','pedidos','pedidos_venta','albaranes_venta','albaranes_compra'];
   return {
     authLoad:true,dataLoad:false,session:null,
+    isElectron:IS_ELECTRON,needsSignup:false,
     lemail:'',lpass:'',lerr:'',lloading:false,
     sec:'dashboard',q:'',
     d:{clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[],pedidos_venta:[],albaranes_venta:[],albaranes_compra:[]},
@@ -1098,10 +1180,24 @@ function app(){
     aiOpen:false,aiMsgs:[],aiLoad:false,aiInput:'',aiHistory:[],mobMenu:false,
 
     async init(){
+      // En Electron, detectar si necesitamos crear el primer admin
+      if(IS_ELECTRON){
+        try{ this.needsSignup = !(await window.gpAPI.hasAnyUser()); }
+        catch(_e){ this.needsSignup = false; }
+      }
       const {data:{session}}=await sb.auth.getSession();
       this.session=session;this.authLoad=false;
       if(session) this.load();
-      sb.auth.onAuthStateChange((_,s)=>{this.session=s;if(s)this.load();else this.d={clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[],pedidos_venta:[],albaranes_venta:[],albaranes_compra:[]};});
+      sb.auth.onAuthStateChange((_,s)=>{this.session=s;if(s){this.load();}else{this.empresa=null;this.d={clientes:[],proveedores:[],productos:[],facturas:[],pedidos:[],pedidos_venta:[],albaranes_venta:[],albaranes_compra:[]};}});
+    },
+
+    async signupAdmin(){
+      this.lloading=true; this.lerr='';
+      if(!/^[a-z0-9_]{3,20}$/i.test(this.lemail.trim())){this.lerr='Usuario: 3-20 caracteres (letras, números, _)';this.lloading=false;return;}
+      if(!this.lpass||this.lpass.length<6){this.lerr='Contraseña mínimo 6 caracteres.';this.lloading=false;return;}
+      const r=await sb.auth.signUp({email:this.lemail.trim(),password:this.lpass});
+      if(r.error){this.lerr=r.error.message;this.lloading=false;return;}
+      this.needsSignup=false; this.lloading=false;
     },
 
     async load(){
@@ -1197,7 +1293,7 @@ function app(){
       this.d={...this.d,[t]:r||[]};
     },
 
-    async login(){this.lloading=true;this.lerr='';const{error}=await sb.auth.signInWithPassword({email:this.lemail,password:this.lpass});if(error)this.lerr='Email o contraseña incorrectos.';this.lloading=false;},
+    async login(){this.lloading=true;this.lerr='';const{error}=await sb.auth.signInWithPassword({email:this.lemail.trim(),password:this.lpass});if(error)this.lerr=error.message||'Credenciales incorrectas.';this.lloading=false;},
     logout(){sb.auth.signOut();},
 
     open(tipo,item=null){

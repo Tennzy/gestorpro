@@ -17,3 +17,9 @@ Thumbs.db
 
 # Backups
 *.bak
+
+# Base de datos local (no subir a GitHub)
+data/gestorpro.db
+data/gestorpro.db-shm
+data/gestorpro.db-wal
+data/backups/

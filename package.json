@@ -15,8 +15,12 @@
   },
   "devDependencies": {
     "@electron/packager": "^20.0.0",
+    "@electron/rebuild": "^4.0.4",
     "@resvg/resvg-js": "^2.6.2",
     "to-ico": "^1.1.5",
     "electron": "^32.2.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.9.0"
   }
 }
