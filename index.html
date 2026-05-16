@@ -220,6 +220,7 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
     <button class="bp" style="width:100%;padding:11px 0;font-size:14px" @click="login()" :disabled="lloading">
       <span x-text="lloading?'Entrando...':'Entrar'"></span>
     </button>
+    <p style="text-align:center;margin-top:14px;font-size:12px"><a @click.prevent="recuperarPass()" href="#" style="color:#185FA5;text-decoration:none">¿Olvidaste tu contraseña?</a></p>
   </div>
 </div>
 
@@ -259,6 +260,7 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
     </nav>
     <div style="padding:12px 16px;border-top:1px solid #e8e8e4">
       <p style="font-size:11px;color:#999;margin:0 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="session?.user?.email||''"></p>
+      <button class="bs" style="width:100%;margin-bottom:6px" @click="open('cambiarPass')">Cambiar contraseña</button>
       <button class="bs" style="width:100%" @click="logout()">Cerrar sesión</button>
     </div>
   </div>
@@ -290,6 +292,7 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
     </nav>
     <div style="padding:12px 16px;border-top:1px solid #e8e8e4;flex-shrink:0">
       <p style="font-size:11px;color:#999;margin:0 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="session?.user?.email||''"></p>
+      <button class="bs" style="width:100%;margin-bottom:6px" @click="open('cambiarPass')">Cambiar contraseña</button>
       <button class="bs" style="width:100%" @click="logout()">Cerrar sesión</button>
     </div>
   </div>
@@ -442,7 +445,7 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
               <td x-text="cname(it.cliente_id)"></td>
               <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
               <td><strong x-text="fmt(tot(it.lineas))"></strong></td>
-              <td style="text-align:right;white-space:nowrap"><button class="be" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0" @click="pdfAlbaran(it,'pedido_venta')">PDF</button><button class="be" @click="open('pedido_venta',it)">Editar</button><button class="bd" @click="del('pedidos_venta',it.id)">Eliminar</button></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0" @click="pdfAlbaran(it,'pedido_venta')">PDF</button><button class="be" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe" @click="pedidoToAlbaran(it)" title="Generar albarán">→ Albarán</button><button class="be" @click="open('pedido_venta',it)">Editar</button><button class="bd" @click="del('pedidos_venta',it.id)">Eliminar</button></td>
             </tr></template>
           </tbody>
         </table>
@@ -467,7 +470,7 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
               <td x-text="pname(it.proveedor_id)"></td>
               <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
               <td><strong x-text="fmt(tot(it.lineas))"></strong></td>
-              <td style="text-align:right;white-space:nowrap"><button class="be" @click="open('pedido',it)">Editar</button><button class="bd" @click="del('pedidos',it.id)">Eliminar</button></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe" @click="pedidoCompraToAlbaran(it)" title="Generar albarán recepción">→ Albarán</button><button class="be" @click="open('pedido',it)">Editar</button><button class="bd" @click="del('pedidos',it.id)">Eliminar</button></td>
             </tr></template>
           </tbody>
         </table>
@@ -492,7 +495,7 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
               <td x-text="cname(it.cliente_id)"></td>
               <td><span :style="bs(it.estado)" x-text="it.estado"></span></td>
               <td><strong x-text="fmt(tot(it.lineas))"></strong></td>
-              <td style="text-align:right;white-space:nowrap"><button class="be" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0" @click="pdfAlbaran(it,'albaran_venta')">PDF</button><button class="be" @click="open('albaran_venta',it)">Editar</button><button class="bd" @click="del('albaranes_venta',it.id)">Eliminar</button></td>
+              <td style="text-align:right;white-space:nowrap"><button class="be" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0" @click="pdfAlbaran(it,'albaran_venta')">PDF</button><button class="be" style="background:#fef3c7;color:#92400e;border-color:#fde68a" @click="albaranToFactura(it)" title="Generar factura">→ Factura</button><button class="be" @click="open('albaran_venta',it)">Editar</button><button class="bd" @click="del('albaranes_venta',it.id)">Eliminar</button></td>
             </tr></template>
           </tbody>
         </table>
@@ -901,6 +904,25 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
   </div>
 </div>
 
+<!-- MODAL CAMBIAR CONTRASEÑA -->
+<div class="ov" x-show="modal==='cambiarPass'" @click.self="modal=null">
+  <div class="mb" style="max-width:380px">
+    <div class="mh">
+      <h3 style="margin:0;font-size:15px;font-weight:600">Cambiar contraseña</h3>
+      <div style="flex:1"></div><button class="bs" style="padding:3px 9px;font-size:15px" @click="modal=null">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div class="fld"><label>Nueva contraseña *</label><input type="password" x-model="f.pass1" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></div>
+      <div class="fld"><label>Repetir contraseña *</label><input type="password" x-model="f.pass2" placeholder="Repite la nueva contraseña" autocomplete="new-password" @keyup.enter="cambiarPass()"></div>
+      <p style="font-size:11px;color:#888;margin-top:4px">Tu sesión seguirá activa. La próxima vez que cierres sesión, deberás usar la nueva contraseña.</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+        <button class="bs" @click="modal=null">Cancelar</button>
+        <button class="bp" @click="cambiarPass()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div x-show="serr" style="position:fixed;bottom:24px;right:24px;background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:10px;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:2000" x-text="serr"></div>
 
 </div>
@@ -975,20 +997,51 @@ function app(){
       }else if(tipo==='producto'){
         this.f=item?{...item}:{nombre:'',categoria:'',precio_venta:'',precio_compra:'',stock:'',unidad:'ud'};
       }else if(tipo==='factura'){
-        this.f=item?{...item,cliente_id:String(item.cliente_id||'')}:{numero:'',fecha:this.hoy(),cliente_id:'',estado:'borrador',lineas:[],notas:''};
+        this.f=item?{...item,cliente_id:String(item.cliente_id||'')}:{numero:this.nextNum('facturas','F'),fecha:this.hoy(),cliente_id:'',estado:'borrador',lineas:[],notas:''};
       }else if(tipo==='pedido'){
-        this.f=item?{...item,proveedor_id:String(item.proveedor_id||'')}:{numero:'',fecha:this.hoy(),proveedor_id:'',estado:'borrador',lineas:[],notas:''};
+        this.f=item?{...item,proveedor_id:String(item.proveedor_id||'')}:{numero:this.nextNum('pedidos','PC'),fecha:this.hoy(),proveedor_id:'',estado:'borrador',lineas:[],notas:''};
       }else if(tipo==='pedido_venta'){
-        this.f=item?{...item,cliente_id:String(item.cliente_id||'')}:{numero:'',fecha:this.hoy(),cliente_id:'',estado:'borrador',lineas:[],notas:''};
+        this.f=item?{...item,cliente_id:String(item.cliente_id||'')}:{numero:this.nextNum('pedidos_venta','PV'),fecha:this.hoy(),cliente_id:'',estado:'borrador',lineas:[],notas:''};
       }else if(tipo==='albaran_venta'){
-        this.f=item?{...item,cliente_id:String(item.cliente_id||'')}:{numero:'',fecha:this.hoy(),cliente_id:'',estado:'pendiente',lineas:[],notas:''};
+        this.f=item?{...item,cliente_id:String(item.cliente_id||'')}:{numero:this.nextNum('albaranes_venta','AV'),fecha:this.hoy(),cliente_id:'',estado:'pendiente',lineas:[],notas:''};
       }else if(tipo==='albaran_compra'){
-        this.f=item?{...item,proveedor_id:String(item.proveedor_id||'')}:{numero:'',fecha:this.hoy(),proveedor_id:'',estado:'pendiente',lineas:[],notas:''};
+        this.f=item?{...item,proveedor_id:String(item.proveedor_id||'')}:{numero:this.nextNum('albaranes_compra','AC'),fecha:this.hoy(),proveedor_id:'',estado:'pendiente',lineas:[],notas:''};
+      }else if(tipo==='cambiarPass'){
+        this.f={pass1:'',pass2:''};
       }
     },
 
+    // Numeración automática: F-2026-0001, PV-2026-0001, etc.
+    nextNum(tabla,prefijo){
+      const y=new Date().getFullYear();
+      const re=new RegExp('^'+prefijo+'-'+y+'-(\\d+)$');
+      const max=(this.d[tabla]||[]).reduce((m,r)=>{
+        const x=re.exec(r.numero||'');return x?Math.max(m,parseInt(x[1],10)):m;
+      },0);
+      return `${prefijo}-${y}-${String(max+1).padStart(4,'0')}`;
+    },
+
+    // Validación NIF/CIF español (DNI/NIE/CIF) — devuelve true si es válido o vacío
+    validateNIF(nif){
+      if(!nif)return true;
+      const v=nif.trim().toUpperCase().replace(/[\s.-]/g,'');
+      if(/^\d{8}[A-Z]$/.test(v)){const l='TRWAGMYFPDXBNJZSQVHLCKE'[parseInt(v,10)%23];return l===v[8];}
+      if(/^[XYZ]\d{7}[A-Z]$/.test(v)){const n=v.replace(/^X/,'0').replace(/^Y/,'1').replace(/^Z/,'2');const l='TRWAGMYFPDXBNJZSQVHLCKE'[parseInt(n.slice(0,8),10)%23];return l===v[8];}
+      if(/^[ABCDEFGHJKLMNPQRSUVW]\d{7}[0-9A-J]$/.test(v)){
+        const pares=parseInt(v[2],10)+parseInt(v[4],10)+parseInt(v[6],10);
+        let im=0;for(const i of [1,3,5,7]){const d=parseInt(v[i],10)*2;im+=Math.floor(d/10)+(d%10);}
+        const s=pares+im;const u=s%10===0?0:10-(s%10);
+        const c=v[8];
+        if(/[KPQS]/.test(v[0]))return c==='JABCDEFGHI'[u];
+        if(/[ABEH]/.test(v[0]))return c===String(u);
+        return c===String(u)||c==='JABCDEFGHI'[u];
+      }
+      return false;
+    },
+
     async saveContact(){
-      if(!this.f.nombre)return;
+      if(!this.f.nombre){this.err('El nombre es obligatorio.');return;}
+      if(this.f.nif && !this.validateNIF(this.f.nif)){this.err('NIF/CIF inválido.');return;}
       const tabla=this.modal==='cliente'?'clientes':'proveedores';
       const{id,user_id,created_at,...rest}=this.f;
       const{error}=id?await sb.from(tabla).update(rest).eq('id',id):await sb.from(tabla).insert({...rest,user_id:this.session.user.id});
@@ -996,19 +1049,91 @@ function app(){
       await this.reload(tabla);this.modal=null;
     },
     async saveProducto(){
-      if(!this.f.nombre)return;
+      if(!this.f.nombre){this.err('El nombre es obligatorio.');return;}
       const{id,user_id,created_at,...rest}=this.f;
       const{error}=id?await sb.from('productos').update(rest).eq('id',id):await sb.from('productos').insert({...rest,user_id:this.session.user.id});
       if(error){this.err('Error: '+error.message);return;}
       await this.reload('productos');this.modal=null;
     },
     async saveDoc(tabla,ck){
-      if(!this.f.numero||!this.f[ck])return;
+      if(!this.f.numero){this.err('El número es obligatorio.');return;}
+      if(!this.f[ck]){this.err(ck==='cliente_id'?'Debes seleccionar un cliente.':'Debes seleccionar un proveedor.');return;}
       const{id,user_id,created_at,...rest}=this.f;
       const sd={...rest,[ck]:Number(rest[ck])};
+      const prevState=id?(this.d[tabla]||[]).find(x=>x.id===id)?.estado:null;
       const{error}=id?await sb.from(tabla).update(sd).eq('id',id):await sb.from(tabla).insert({...sd,user_id:this.session.user.id});
       if(error){this.err('Error: '+error.message);return;}
-      await this.reload(tabla);this.modal=null;
+      // Descuento/aumento de stock automático cuando un albarán llega a "entregado"/"recibido" por primera vez
+      if(tabla==='albaranes_venta' && sd.estado==='entregado' && prevState!=='entregado'){await this.adjustStock(sd.lineas,-1);}
+      if(tabla==='albaranes_compra' && sd.estado==='recibido' && prevState!=='recibido'){await this.adjustStock(sd.lineas,+1);}
+      await this.reload(tabla);
+      if(tabla.startsWith('albaranes')) await this.reload('productos');
+      this.modal=null;
+    },
+
+    // Ajuste de stock automático al confirmar albaranes (signo = -1 venta, +1 compra)
+    async adjustStock(lineas,signo){
+      if(!lineas||!lineas.length)return;
+      for(const l of lineas){
+        if(!l.producto_id && !l.desc)continue;
+        // Buscar producto por id o por nombre exacto
+        const p=l.producto_id?this.d.productos.find(x=>x.id===l.producto_id):this.d.productos.find(x=>(x.nombre||'').toLowerCase()===(l.desc||'').toLowerCase());
+        if(!p)continue;
+        const nuevo=(Number(p.stock)||0)+signo*Number(l.qty||0);
+        await sb.from('productos').update({stock:nuevo}).eq('id',p.id);
+      }
+    },
+
+    // Convertir pedido_venta → albaran_venta (mismo cliente/líneas, número nuevo, estado pendiente)
+    async pedidoToAlbaran(pedido){
+      if(!confirm(`Generar albarán de entrega a partir de "${pedido.numero}"?`))return;
+      const sd={numero:this.nextNum('albaranes_venta','AV'),fecha:this.hoy(),cliente_id:pedido.cliente_id,estado:'pendiente',lineas:pedido.lineas||[],notas:`Generado del pedido ${pedido.numero}`,user_id:this.session.user.id};
+      const{error}=await sb.from('albaranes_venta').insert(sd);
+      if(error){this.err('Error: '+error.message);return;}
+      // Marcar pedido como "enviado"
+      await sb.from('pedidos_venta').update({estado:'enviado'}).eq('id',pedido.id);
+      await this.reload('albaranes_venta');await this.reload('pedidos_venta');
+      this.sec='albaranes_venta';
+    },
+
+    // Convertir albaran_venta → factura
+    async albaranToFactura(albaran){
+      if(!confirm(`Generar factura a partir de "${albaran.numero}"?`))return;
+      const sd={numero:this.nextNum('facturas','F'),fecha:this.hoy(),cliente_id:albaran.cliente_id,estado:'borrador',lineas:albaran.lineas||[],notas:`Generada del albarán ${albaran.numero}`,user_id:this.session.user.id};
+      const{error}=await sb.from('facturas').insert(sd);
+      if(error){this.err('Error: '+error.message);return;}
+      await sb.from('albaranes_venta').update({estado:'facturado'}).eq('id',albaran.id);
+      await this.reload('facturas');await this.reload('albaranes_venta');
+      this.sec='facturas';
+    },
+
+    // Convertir pedido_compra → albaran_compra
+    async pedidoCompraToAlbaran(pedido){
+      if(!confirm(`Generar albarán de recepción a partir de "${pedido.numero}"?`))return;
+      const sd={numero:this.nextNum('albaranes_compra','AC'),fecha:this.hoy(),proveedor_id:pedido.proveedor_id,estado:'pendiente',lineas:pedido.lineas||[],notas:`Generado del pedido ${pedido.numero}`,user_id:this.session.user.id};
+      const{error}=await sb.from('albaranes_compra').insert(sd);
+      if(error){this.err('Error: '+error.message);return;}
+      await sb.from('pedidos').update({estado:'recibido'}).eq('id',pedido.id);
+      await this.reload('albaranes_compra');await this.reload('pedidos');
+      this.sec='albaranes_compra';
+    },
+
+    // Cambio de contraseña
+    async cambiarPass(){
+      if(!this.f.pass1||this.f.pass1.length<6){this.err('La nueva contraseña debe tener al menos 6 caracteres.');return;}
+      if(this.f.pass1!==this.f.pass2){this.err('Las contraseñas no coinciden.');return;}
+      const{error}=await sb.auth.updateUser({password:this.f.pass1});
+      if(error){this.err('Error: '+error.message);return;}
+      this.modal=null;this.err('✓ Contraseña cambiada correctamente.');
+    },
+
+    // Recuperación de contraseña — envía email magic link
+    async recuperarPass(){
+      const email=prompt('Email de tu cuenta:');
+      if(!email)return;
+      const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});
+      if(error){this.lerr='Error: '+error.message;return;}
+      this.lerr='✓ Te hemos enviado un email para restablecer la contraseña.';
     },
     addL(){if(!this.nl.desc)return;this.f.lineas=[...(this.f.lineas||[]),{desc:this.nl.desc,qty:Number(this.nl.qty),precio:Number(this.nl.precio)}];this.nl={desc:'',qty:1,precio:''};},
     remL(i){this.f.lineas=this.f.lineas.filter((_,idx)=>idx!==i);},
