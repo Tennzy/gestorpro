@@ -1,0 +1,22 @@
+{
+  "name": "gestorpro-palets",
+  "version": "1.0.0",
+  "description": "GestorPro · Sistema de gestión integral para Palets S.L. — clientes, proveedores, productos, pedidos, albaranes, facturas, asistente IA",
+  "main": "main.js",
+  "author": "Tennzy / RG Labs",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "icon": "node tools/build-icon.js",
+    "package": "electron-packager . \"GestorPro\" --platform=win32 --arch=x64 --out=dist --overwrite --asar --app-copyright=\"Copyright (c) 2026 RG Labs\" --icon=icon.ico --ignore=\"^/(dist|\\.git|\\.github|node_modules/\\.cache|README\\.md|tools)\"",
+    "zip": "node tools/zip-portable.js",
+    "build": "npm run icon && npm run package && npm run zip"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.0.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "to-ico": "^1.1.5",
+    "electron": "^32.2.0"
+  }
+}

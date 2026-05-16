@@ -1,0 +1,19 @@
+# Dependencias
+node_modules/
+
+# Build / packaging
+dist/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporales
+*.tmp
+*.local
+*.log
+
+# Backups
+*.bak
