@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GestorPro - Palets S.L.</title>
 <!-- Vendor offline (funciona en .exe sin internet y también en la web GitHub Pages) -->
-<script src="vendor/supabase.min.js"></script>
 <script src="vendor/papaparse.min.js"></script>
 <script src="vendor/xlsx.full.min.js"></script>
 <script src="vendor/alpine.min.js" defer></script>
@@ -1281,17 +1280,16 @@ body{-webkit-tap-highlight-color:rgba(24,95,165,0.12)}
 </div>
 <script>
 // ============================================================
-// ADAPTER DUAL: Electron (SQLite local) o Web (Supabase)
+// ADAPTER DUAL: Electron (SQLite local) o Web (API RG Labs)
 // El renderer no sabe de dónde vienen los datos: misma API.
 // ============================================================
 const IS_ELECTRON = !!(window.gpAPI && window.gpAPI.isElectron);
-const SUPA_URL = 'https://uludefpsovlfbodbihig.supabase.co';
-const SUPA_KEY = 'sb_publishable_HTl21hRegaA86sJgUmJ61w_02rjod9n';
+const ERP_API_URL = 'https://api-erp.rglabs.es';
 
 // ----- LocalDb (SQLite via IPC) -----
 class LocalQuery {
   constructor(table) { this.t=table; this.f=[]; this._cmd=null; this._data=null; this._order=null; this._single=null; this._opts=null; }
-  select(_cols='*'){ this._cmd='select'; return this; }
+  select(_cols='*'){ if(!this._cmd)this._cmd='select'; return this; }
   insert(data){ this._cmd='insert'; this._data=data; return this; }
   upsert(data,opts){ this._cmd='upsert'; this._data=data; this._opts=opts||{}; return this; }
   update(data){ this._cmd='update'; this._data=data; return this; }
@@ -1346,8 +1344,118 @@ const localDbAdapter = {
   },
 };
 
+// ----- Web (PostgreSQL local via api-erp.rglabs.es) -----
+class RestQuery {
+  constructor(table) { this.t=table; this.f=[]; this._cmd=null; this._data=null; this._order=null; this._single=null; this._opts=null; }
+  select(_cols='*'){ if(!this._cmd)this._cmd='select'; return this; }
+  insert(data){ this._cmd='insert'; this._data=data; return this; }
+  upsert(data,opts){ this._cmd='upsert'; this._data=data; this._opts=opts||{}; return this; }
+  update(data){ this._cmd='update'; this._data=data; return this; }
+  delete(){ this._cmd='delete'; return this; }
+  eq(c,v){ if(c==='user_id') return this; this.f.push({op:'eq',c,v}); return this; }
+  in(c,vs){ this.f.push({op:'in',c,v:vs}); return this; }
+  order(c,opts){ this._order={c,asc:opts?opts.ascending!==false:true}; return this; }
+  maybeSingle(){ this._single='maybe'; return this._exec(); }
+  single(){ this._single='one'; return this._exec(); }
+  _idFilter(){ return this.f.find(x=>x.op==='eq'&&x.c==='id')?.v; }
+  _applyClientOps(data){
+    let rows = Array.isArray(data) ? [...data] : data == null ? [] : [data];
+    for(const f of this.f){
+      if(f.c==='id' && ['update','delete'].includes(this._cmd)) continue;
+      if(f.op==='eq') rows = rows.filter(r=>String(r?.[f.c])===String(f.v));
+      if(f.op==='in') rows = rows.filter(r=>(f.v||[]).map(String).includes(String(r?.[f.c])));
+    }
+    if(this._order){
+      const {c,asc}=this._order;
+      rows.sort((a,b)=>{
+        const av=a?.[c]??'', bv=b?.[c]??'';
+        const r = String(av).localeCompare(String(bv), 'es', {numeric:true});
+        return asc ? r : -r;
+      });
+    }
+    if(this._single==='one') return rows[0] ?? null;
+    if(this._single==='maybe') return rows[0] ?? null;
+    return Array.isArray(data) ? rows : rows[0] ?? null;
+  }
+  async _exec(){
+    try{
+      const data = await erpRequest(this.t, this._cmd||'select', this._data, this._idFilter());
+      return {data:this._applyClientOps(data),error:null};
+    }catch(e){ return {data:null,error:{message:e.message||'Error de API'}}; }
+  }
+  then(res,rej){ return this._exec().then(res,rej); }
+  catch(rej){ return this._exec().catch(rej); }
+}
+
+async function erpRequest(table, cmd='select', data=null, id=null){
+  const token = localStorage.getItem('gestorpro_erp_token') || '';
+  if(!token) throw new Error('Sin sesión. Inicia sesión de nuevo.');
+  const isEmpresa = table === 'empresa';
+  let method = 'GET';
+  let path = `/${table}`;
+  if(cmd==='insert'){ method='POST'; }
+  else if(cmd==='upsert' && isEmpresa){ method='PUT'; }
+  else if(cmd==='upsert'){ method = data?.id ? 'PUT' : 'POST'; if(data?.id) path += `/${encodeURIComponent(data.id)}`; }
+  else if(cmd==='update'){ method='PUT'; path += `/${encodeURIComponent(id)}`; }
+  else if(cmd==='delete'){ method='DELETE'; path += `/${encodeURIComponent(id)}`; }
+  const headers = { Authorization:`Bearer ${token}` };
+  const opts = { method, headers };
+  if(method!=='GET' && method!=='DELETE'){
+    headers['Content-Type']='application/json';
+    opts.body=JSON.stringify(data||{});
+  }
+  const res = await fetch(ERP_API_URL + path, opts);
+  const txt = await res.text();
+  let json = null;
+  try{ json = txt ? JSON.parse(txt) : null; }catch(_e){ json = txt; }
+  if(!res.ok) throw new Error((json&&json.error)||`API ${res.status}`);
+  return json;
+}
+
+const restAdapter = {
+  from(table){ return new RestQuery(table); },
+  rpc(){ return Promise.resolve({data:null,error:{message:'rpc_not_available'}}); },
+  auth:{
+    _listeners:[],
+    _session:null,
+    _sessionFrom(user,token){ return user&&token ? {access_token:token,user:{id:user.id,email:user.email}} : null; },
+    async getSession(){
+      const token = localStorage.getItem('gestorpro_erp_token');
+      const rawUser = localStorage.getItem('gestorpro_erp_user');
+      const user = rawUser ? JSON.parse(rawUser) : null;
+      this._session = this._sessionFrom(user,token);
+      return {data:{session:this._session}};
+    },
+    onAuthStateChange(cb){ this._listeners.push(cb); return {data:{subscription:{unsubscribe(){}}}}; },
+    _emit(){ this._listeners.forEach(cb=>cb(null,this._session)); },
+    async signInWithPassword({email,password}){
+      try{
+        const res = await fetch(ERP_API_URL + '/auth/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok) return {error:{message:data.error||'Credenciales incorrectas.'}};
+        localStorage.setItem('gestorpro_erp_token', data.token);
+        localStorage.setItem('gestorpro_erp_user', JSON.stringify(data.user));
+        this._session = this._sessionFrom(data.user,data.token);
+        this._emit();
+        return {data:{session:this._session},error:null};
+      }catch(e){ return {error:{message:e.message||'No se pudo iniciar sesión.'}}; }
+    },
+    async signUp({email,password}){
+      try{
+        const res = await fetch(ERP_API_URL + '/auth/register', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok) return {error:{message:data.error||'No se pudo crear la cuenta.'}};
+        return this.signInWithPassword({email,password});
+      }catch(e){ return {error:{message:e.message||'No se pudo crear la cuenta.'}}; }
+    },
+    async signOut(){ localStorage.removeItem('gestorpro_erp_token'); localStorage.removeItem('gestorpro_erp_user'); this._session=null; this._emit(); return {error:null}; },
+    async updateUser(){ return {error:{message:'El cambio de contraseña todavía no está disponible en la API web.'}}; },
+    async resetPasswordForEmail(){ return {error:{message:'La recuperación por email todavía no está disponible en la API web.'}}; },
+  },
+};
+
 // ----- Adapter elegido -----
-const sb = IS_ELECTRON ? localDbAdapter : window.supabase.createClient(SUPA_URL, SUPA_KEY);
+const sb = IS_ELECTRON ? localDbAdapter : restAdapter;
 const HAS_SIGNUP = IS_ELECTRON; // signup solo en local (primer admin)
 
 function app(){
@@ -1738,15 +1846,8 @@ CAMPOS EXACTOS POR TABLA (usa SOLO estos, ninguno más):
       this.aiLoad=true;
       this.$nextTick(()=>this.aiScrollBottom());
       try{
-        const res=await fetch('https://uludefpsovlfbodbihig.supabase.co/functions/v1/anthropic-proxy',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,system:this.buildCtx(),messages:this.aiHistory})
-        });
-        const data=await res.json();
-        const raw=(data.content||[]).map(b=>b.text||'').join('');
-        this.aiHistory.push({role:'assistant',content:raw});
-        if(this.aiHistory.length>20)this.aiHistory=this.aiHistory.slice(-20);
+        throw new Error('El asistente IA está pendiente de conectar a la nueva API de RG Labs.');
+        const raw='';
         this.aiLoad=false;
         const am=raw.match(/ACCION_JSON:([\s\S]+?):FIN_ACCION/);
         if(am){
@@ -1759,7 +1860,7 @@ CAMPOS EXACTOS POR TABLA (usa SOLO estos, ninguno más):
         }
       }catch(e){
         this.aiLoad=false;
-        this.aiMsgs.push({type:'msg',role:'bot',html:'❌ Error al conectar. Inténtalo de nuevo.'});
+        this.aiMsgs.push({type:'msg',role:'bot',html:'Asistente IA no disponible todavía tras la migración de base de datos.'});
       }
       this.$nextTick(()=>this.aiScrollBottom());
     },
